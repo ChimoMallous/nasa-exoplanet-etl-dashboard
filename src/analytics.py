@@ -40,7 +40,7 @@ def count_planets_discovered_by_year():
     FROM exoplanets
     GROUP BY discovery_year
     ORDER BY year DESC
-    LIMIT 20;
+    LIMIT 50;
     """
 
     result = pd.read_sql(query, conn)
@@ -67,8 +67,20 @@ def top_stars_by_planet_count():
 
     return result
 
-#print(count_exoplanet_discoveries())
-#print(count_stars_with_exoplanets())
-#print(count_planets_discovered_by_year())
-#print(top_stars_by_planet_count())
+def top_exoplanet_discovery_methods():
+
+    conn = sqlite3.connect('exoplanet_db')
+
+    query = """
+    SELECT discovery_method, COUNT(DISTINCT name) AS method_frequency
+    FROM exoplanets
+    GROUP BY discovery_method
+    ORDER BY method_frequency DESC;
+    """
+
+    result = pd.read_sql(query, conn)
+
+    conn.close()
+
+    return result 
 

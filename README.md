@@ -1,6 +1,6 @@
 # Exoplanet Analytics Dashboard
 
-![Dashboard Screenshot](images/dashboard.png)
+![Dashboard Screenshot](images/exoplanet_dashboard.png)
 
 ## Overview
 An end-to-end ETL pipeline and interactive analytics dashboard built on real NASA exoplanet data.
@@ -12,7 +12,7 @@ Built to develop real data engineering skills using a real-world NASA data sourc
 - Extracts confirmed exoplanet data from the NASA Exoplanet Archive TAP API
 - Transforms raw JSON responses into structured, clean records
 - Loads 6,000+ exoplanet records into a SQLite database
-- Visualizes planetary discovery trends and star system data through interactive charts
+- Visualizes exoplanet discovery trends and discovery method distributions through an interactive dashboard
 
 ## Tech Stack
 | Tool | Purpose |
@@ -33,6 +33,7 @@ exoplanet-analytics/
 │   ├── etl.py
 │   ├── database.py
 │   └── analytics.py
+│   └── pipeline.py
 ├── images/
 │   └── star_background.jpg
 │   └── star_dashboard.jpg
@@ -40,6 +41,29 @@ exoplanet-analytics/
 ├── requirements.txt
 └── README.md
 ```
+
+## Data Flow
+```
+NASA Exoplanet Archive API
+        │
+        ▼
+   src/pipeline.py
+        │
+        ▼
+      src/etl.py
+        │
+        ▼
+  SQLite Database
+        │
+        ▼
+  src/analytics.py
+        │
+        ▼
+       app.py
+   Streamlit Dashboard
+```
+
+The dashboard automatically runs the ETL pipeline and creates the SQLite database on first launch if pipeline.py was not ran to begin with.
 
 ## Getting Started
 
@@ -50,7 +74,7 @@ pip install -r requirements.txt
 
 Run the ETL pipeline to populate the database:
 ```
-python src/etl.py
+python src/pipeline.py
 ```
 
 Launch the dashboard:
@@ -64,7 +88,7 @@ No API key required — the NASA Exoplanet Archive is fully public.
 - Live data pulled from the NASA Exoplanet Archive Planetary Systems table
 - Confirmed exoplanet and star counts as KPI metrics
 - Line chart showing planetary discovery trends over time (including the Kepler mission spike)
-- Bar chart of stars with the most confirmed exoplanets
+- Bar chart showing the frequency of use for all exoplanet discovery methods
 - Fully transparent charts over a space-themed background
 
 ## What I Learned
@@ -75,9 +99,9 @@ No API key required — the NASA Exoplanet Archive is fully public.
 - Data storytelling through interactive Plotly visualizations in Streamlit
 
 ## Roadmap
-- [ ] Schedule pipeline runs with Apache Airflow
-- [ ] Add discovery method breakdown chart
-- [ ] Add planet radius distribution histogram
+- [ ] Add planet radius distribution analysis
+- [ ] Add planet mass analysis
+- [ ] Schedule ETL runs with Apache Airflow
 - [ ] Dockerized deployment
 
 ## Data Source

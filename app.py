@@ -1,18 +1,14 @@
 import streamlit as st
 import plotly.express as px
 import base64
-from src.analytics import count_exoplanet_discoveries, count_stars_with_exoplanets, count_planets_discovered_by_year, top_stars_by_planet_count
+from src.analytics import count_exoplanet_discoveries, count_stars_with_exoplanets, count_planets_discovered_by_year, top_exoplanet_discovery_methods
 import os
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
 
 if not os.path.exists("exoplanet_db"):
-    from src.etl import extract, transform, load, url
-    from src.database import save_to_db
-    r_data = extract(url)
-    t_data = transform(r_data)
-    df = load(t_data)
-    save_to_db(df)
+    from src.pipeline import run
+    run()
 
 with open("images/star_background.jpg", "rb") as f:
     encoded = base64.b64encode(f.read()).decode()
@@ -36,13 +32,13 @@ st.markdown("""
 
 
 st.title("Exoplanet Analytics Dashboard")
-st.markdown("Data sourced from the NASA Exoplanet Archive API Planetary Systems table")
+st.markdown(":shimmer[Data sourced from the NASA Exoplanet Archive API Planetary Systems table]")
 
 c1, c2 = st.columns(2)
 
 with c1:
     total_exoplanets = count_exoplanet_discoveries()
-    st.metric(label="Total  Confirmed Exoplanets Discovered", value=total_exoplanets.iloc[0, 0])
+    st.metric(label="Total Confirmed Exoplanets Discovered", value=total_exoplanets.iloc[0, 0])
 
 with c2:
     total_stars = count_stars_with_exoplanets()
@@ -54,26 +50,27 @@ with c1:
         planets_by_year,
         x='year',
         y='total_exoplanets_discovered',
-        title='Planets Discovered by Year',
-        labels={'year': 'Year', 'total_exoplanets_discovered': 'Planets Discovered'},
+        title='Exoplanets Discovered by Year',
+        labels={'year': 'Year', 'total_exoplanets_discovered': 'Number of Exoplanets Discovered'},
         color_discrete_sequence=["#0122DB"]
     )
     fig.update_layout(
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig)
 
 with c2:
-    top_stars = top_stars_by_planet_count()
+    top_methods = top_exoplanet_discovery_methods()
     fig = px.bar(
-        top_stars,
-        x='star_name',
-        y='exoplanet_count',
-        title="Stars by Planet Count",
-        labels={'star_name': 'Star', 'exoplanet_count': 'Planets Count'},
+        top_methods,
+        x='discovery_method',
+        y='method_frequency',
+        title="Exoplanets Discovered by Method",
+        labels={'discovery_method': 'Discovery Method', 'method_frequency': 'Number of Exoplanet Discoveries'},
         color_discrete_sequence=["#011BAE"]
         )
     fig.update_layout(
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig)
+
