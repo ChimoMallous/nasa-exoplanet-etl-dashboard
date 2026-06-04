@@ -1,6 +1,5 @@
 # Exoplanet Analytics Dashboard
 
-![Dashboard Screenshot](images/exoplanet_dashboard.png)
 [Live Demo](https://nasa-exoplanet-etl-dashboard-0.streamlit.app/)
 
 ## Overview
@@ -45,24 +44,40 @@ exoplanet-analytics/
 ```
 
 ## Data Flow
+
 ```
-NASA Exoplanet Archive API
-        │
-        ▼
-   src/pipeline.py
-        │
-        ▼
-      src/etl.py
-        │
-        ▼
-  SQLite Database
-        │
-        ▼
-  src/analytics.py
-        │
-        ▼
-       app.py
-   Streamlit Dashboard
+┌──────────────────────────────┐
+│  NASA Exoplanet Archive API  │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│         src/etl.py           │
+│  (Extract, Transform, Load)  │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│       src/pipeline.py        │
+│      (Orchestrates ETL)      │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│       SQLite Database        │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│      src/analytics.py        │
+│       (SQL Queries)          │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│            app.py            │
+│    (Streamlit Dashboard)     │
+└──────────────────────────────┘
 ```
 
 The dashboard automatically runs the ETL pipeline and creates the SQLite database on first launch if pipeline.py was not ran to begin with.
@@ -88,10 +103,10 @@ No API key required — the NASA Exoplanet Archive is fully public.
 
 ## Features
 - Live data pulled from the NASA Exoplanet Archive Planetary Systems table
-- Confirmed exoplanet and star counts as KPI metrics
+- Total confirmed exoplanets discovered and total confirmed exoplanets discovered in 2026 counts as KPI metric
 - Line chart showing planetary discovery trends over time (including the Kepler mission spike)
 - Bar chart showing the frequency of use for all exoplanet discovery methods
-- Bar chart showing average planet radius by discovery method with min/max on hover
+- Stacked bar chart showing exoplanet size category breakdown by discovery method
 - Analytical insights written beneath each chart interpreting the data in domain context
 - Fully transparent charts over a space-themed background
 
@@ -102,7 +117,9 @@ No API key required — the NASA Exoplanet Archive is fully public.
 - Building an analytics layer with SQL aggregations on top of a database
 - Translating raw data visualizations into domain-specific insights using NASA exoplanet science context
 - Data storytelling through interactive Plotly visualizations in Streamlit
+- Binning continuous data into domain-relevant categories using SQL CASE statements
 - Implementing structured logging with Python's logging module across a multi-module project
+
 
 ## Roadmap
 - [ ] Expand inline code documentation and docstrings across all modules

@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def count_exoplanet_discoveries(): 
+def count_exoplanets_discovered(): 
     try:
         conn = sqlite3.connect("exoplanet_db") # Create connection to database
 
@@ -19,15 +19,16 @@ def count_exoplanet_discoveries():
         
         return result
     except Exception as e:
-        logging.error(f"count_exoplanet_discoveries failed: {e}")
+        logging.error(f"count_exoplanets_discovered failed: {e}")
 
-def count_stars_with_exoplanets():
+def count_exoplanets_discovered_2026():
     try:
         conn = sqlite3.connect("exoplanet_db")
 
         query = """
-        SELECT COUNT(DISTINCT star_name) AS total_stars_with_exoplanets
-        FROM exoplanets;
+        SELECT COUNT(DISTINCT name) AS total_exoplanets_discovered_2026
+        FROM exoplanets
+        WHERE discovery_year = 2026;
         """
 
         result = pd.read_sql(query, conn)
@@ -36,9 +37,9 @@ def count_stars_with_exoplanets():
 
         return result
     except Exception as e:
-        logging.error(f"count_stars_with_exoplanets failed: {e}")
+        logging.error(f"count_exoplanets_discovered_2026 failed: {e}")
 
-def count_planets_discovered_by_year():
+def count_exoplanets_discovered_by_year():
     try:
         conn = sqlite3.connect("exoplanet_db")
 
@@ -55,7 +56,7 @@ def count_planets_discovered_by_year():
 
         return result
     except Exception as e:
-        logging.error(f"count_planets_discovered_by_year failed: {e}")
+        logging.error(f"count_exoplanets_discovered_by_year failed: {e}")
 
 def top_exoplanet_discovery_methods():
     try:
@@ -81,11 +82,19 @@ def exoplanet_radius_by_discovery_method():
         conn = sqlite3.connect("exoplanet_db")
 
         query = """
-        SELECT discovery_method, AVG(planet_radius) AS avg_radius, MIN(planet_radius) AS min_radius, MAX(planet_radius) AS max_radius
+        SELECT 
+            discovery_method, 
+            CASE
+                WHEN planet_radius < 2 THEN 'Small (<2 Earth Radius)'
+                WHEN planet_radius < 6 THEN 'Medium (2-6 Earth Radius)'
+                WHEN planet_radius < 15 THEN 'Large (6-15 Earth Radius)'
+                ELSE 'Giant (>15 Earth Radius)'
+            END AS size_category,
+            COUNT(DISTINCT name) AS planet_count
         FROM exoplanets
         WHERE planet_radius IS NOT NULL
-        GROUP BY discovery_method
-        ORDER BY avg_radius DESC;
+        GROUP BY discovery_method, size_category
+        ORDER BY discovery_method;
         """ 
 
         result = pd.read_sql(query, conn)

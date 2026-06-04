@@ -2,10 +2,7 @@ import streamlit as st
 import plotly.express as px
 import base64
 import os
-import logging
-from src.analytics import count_exoplanet_discoveries, count_stars_with_exoplanets, count_planets_discovered_by_year, top_exoplanet_discovery_methods, exoplanet_radius_by_discovery_method
-
-logger = logging.getLogger(__name__)
+from src.analytics import count_exoplanets_discovered, count_exoplanets_discovered_2026, count_exoplanets_discovered_by_year, top_exoplanet_discovery_methods, exoplanet_radius_by_discovery_method
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
 
@@ -15,6 +12,7 @@ if not os.path.exists("exoplanet_db"):
 
 with open("images/star_background.jpg", "rb") as f:
     encoded = base64.b64encode(f.read()).decode()
+
 st.markdown(f"""
 <style>
 [data-testid="stAppViewContainer"] {{
@@ -40,12 +38,12 @@ st.markdown(":shimmer[Data sourced from the NASA Exoplanet Archive API Planetary
 c1, c2 = st.columns(2)
 
 with c1:
-    total_exoplanets = count_exoplanet_discoveries()
+    total_exoplanets = count_exoplanets_discovered()
     st.metric(label="Total Confirmed Exoplanets Discovered", value=total_exoplanets.iloc[0, 0])
 
 with c2:
-    total_stars = count_stars_with_exoplanets()
-    st.metric(label="Total Confirmed Stars with Planets", value=total_stars.iloc[0, 0])
+    total_exoplanets_2026 = count_exoplanets_discovered_2026()
+    st.metric(label="Total Confirmed Exoplanets Discovered This Year", value=total_exoplanets_2026.iloc[0, 0])
 
 with c1:
     top_methods = top_exoplanet_discovery_methods()
@@ -63,23 +61,47 @@ with c1:
     st.plotly_chart(fig)
     st.caption("Transit photometry dominates exoplanet detection, accounting for over 70% of all confirmed discoveries due to the Kepler and TESS space telescopes.")
 
-
 with c2:
-    radius_by_method = exoplanet_radius_by_discovery_method()
+    size_dist = exoplanet_radius_by_discovery_method()
     fig = px.bar(
-        radius_by_method,
-        x='avg_radius',
+        size_dist,
+        x='planet_count',
         y='discovery_method',
-        orientation='h',
-        title='Average Exoplanet Radius by Discovery Method',
-        labels={'discovery_method': 'Discovery Method', 'avg_radius': 'Average Radius', 'min_radius': 'Min Radius', 'max_radius': 'Max Radius'},
-        color_discrete_sequence=["#0122DB"],
-        hover_data=['min_radius', 'max_radius']
+        color='size_category',
+        orientation='h',  
+        barmode='stack',
+        custom_data=['planet_count'],
+        color_discrete_map={
+            "Small (<2 Earth Radius)": "#0B1D51",
+            "Medium (2-6 Earth Radius)": "#2D7FF9",
+            "Large (6-15 Earth Radius)": "#6FA8FF",
+            "Giant (>15 Earth Radius)": "#A6C8FF"
+        },
+        category_orders={"size_category": [
+            "Giant (>15 Earth Radius)",
+            "Large (6-15 Earth Radius)",
+            "Medium (2-6 Earth Radius)",
+            "Small (<2 Earth Radius)"
+        ]},
+        title="Exoplanet Size Breakdown by Discovery Method (%)",
+        labels={
+            "planet_count": "Percentage of Discoveries (%)",
+            "discovery_method": "Discovery Method",
+            "size_category": "Planet Size"
+        }
+    )
+    fig.update_layout(
+        barnorm='percent',
+        xaxis=dict(showgrid=False), 
+        yaxis=dict(showgrid=False)
+    )
+    fig.update_traces(
+        hovertemplate="<b>%{fullData.name}</b><br>Number of Exoplanets Discovered: %{customdata[0]}<br>Percentage: %{x:.1f}%<extra></extra>"
     )
     st.plotly_chart(fig)
-    st.caption("Direct imaging finds the largest exoplanets; young, massive gas giants far from their star, as these large, bright planets are the easiest to photograph.")
+    st.caption("Direct imaging finds mostly giant and large exoplanets. It primarily captures young, massive gas giants far from their star, as these bright planets are the easiest to photograph.")
 
-planets_by_year = count_planets_discovered_by_year()
+planets_by_year = count_exoplanets_discovered_by_year()
 fig = px.line(
     planets_by_year,
     x='year',
