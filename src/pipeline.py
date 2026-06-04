@@ -1,13 +1,11 @@
-from src.etl import extract, transform, load, url
-from src.database import save_to_db
+from etl import extract, transform, load_to_db, url
 
 def run():
     r_data = extract(url)
     t_data = transform(r_data)
-    df = load(t_data)
-    if df is not None:
+    if t_data is not None:
         try:
-            save_to_db(df)
+            load_to_db(t_data)
             print("Dataframe saved to Database")
         except Exception as e:
             print(f"Error saving: {e}")

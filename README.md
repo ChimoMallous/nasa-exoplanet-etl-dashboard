@@ -31,7 +31,6 @@ exoplanet-analytics/
 │   └── config.toml
 ├── src/
 │   ├── etl.py
-│   ├── database.py
 │   └── analytics.py
 │   └── pipeline.py
 ├── images/
@@ -89,6 +88,8 @@ No API key required — the NASA Exoplanet Archive is fully public.
 - Confirmed exoplanet and star counts as KPI metrics
 - Line chart showing planetary discovery trends over time (including the Kepler mission spike)
 - Bar chart showing the frequency of use for all exoplanet discovery methods
+- Bar chart showing average planet radius by discovery method with min/max on hover
+- Analytical insights written beneath each chart interpreting the data in domain context
 - Fully transparent charts over a space-themed background
 
 ## What I Learned
@@ -96,13 +97,13 @@ No API key required — the NASA Exoplanet Archive is fully public.
 - Querying a TAP (Table Access Protocol) compliant API using ADQL
 - Persisting and querying structured data with SQLite
 - Building an analytics layer with SQL aggregations on top of a database
+- Translating raw data visualizations into domain-specific insights using NASA exoplanet science context
 - Data storytelling through interactive Plotly visualizations in Streamlit
 
 ## Roadmap
-- [ ] Add planet radius distribution analysis
-- [ ] Add planet mass analysis
-- [ ] Schedule ETL runs with Apache Airflow
-- [ ] Dockerized deployment
+- [ ] Add robust error handling and logging with Python's `logging` module
+- [ ] Expand inline code documentation and docstrings across all modules
+- [ ] Dockerized Deployment
 
 ## Data Source
 NASA Exoplanet Archive TAP API — Planetary Systems table (ps), maintained by Caltech/IPAC on behalf of NASA.
