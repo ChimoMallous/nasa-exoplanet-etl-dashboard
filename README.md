@@ -105,8 +105,6 @@ No API key required — the NASA Exoplanet Archive is fully public.
 
 ## Roadmap
 - [ ] Expand inline code documentation and docstrings across all modules
-- [ ] Dockerized Deployment
-- [ ] Write logs to a persistent log file for pipeline run history
 
 ## Data Source
 NASA Exoplanet Archive TAP API — Planetary Systems table (ps), maintained by Caltech/IPAC on behalf of NASA.

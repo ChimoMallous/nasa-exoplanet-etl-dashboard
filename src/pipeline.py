@@ -1,9 +1,16 @@
-from etl import extract, transform, load_to_db, url
+try: 
+    from src.etl import extract, transform, load_to_db, url
+except ImportError:
+    from etl import extract, transform, load_to_db, url
 import logging
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("pipeline.log"),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 

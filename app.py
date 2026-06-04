@@ -1,21 +1,17 @@
 import streamlit as st
 import plotly.express as px
 import base64
-from src.analytics import count_exoplanet_discoveries, count_stars_with_exoplanets, count_planets_discovered_by_year, top_exoplanet_discovery_methods, exoplanet_radius_by_discovery_method
 import os
+import logging
+from src.analytics import count_exoplanet_discoveries, count_stars_with_exoplanets, count_planets_discovered_by_year, top_exoplanet_discovery_methods, exoplanet_radius_by_discovery_method
+
+logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
 
 if not os.path.exists("exoplanet_db"):
-    from src.etl import extract, transform, load_to_db, url
-    r_data = extract(url)
-    t_data = transform(r_data)
-    if t_data:
-        try:
-            load_to_db(t_data)
-            print("Dataframe saved to Database")
-        except Exception as e:
-            print(f"Error saving: {e}")
+    from src.pipeline import run
+    run()
 
 with open("images/star_background.jpg", "rb") as f:
     encoded = base64.b64encode(f.read()).decode()
