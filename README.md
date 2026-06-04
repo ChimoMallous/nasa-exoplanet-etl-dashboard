@@ -13,6 +13,7 @@ Built to develop real data engineering skills using a real-world NASA data sourc
 - Transforms raw JSON responses into structured, clean records
 - Loads 6,000+ exoplanet records into a SQLite database
 - Visualizes exoplanet discovery trends and discovery method distributions through an interactive dashboard
+- Implements structured error handling and logging across the ETL pipeline and analytics layer
 
 ## Tech Stack
 | Tool | Purpose |
@@ -23,6 +24,7 @@ Built to develop real data engineering skills using a real-world NASA data sourc
 | SQLite | Local data storage |
 | Streamlit | Dashboard interface |
 | Plotly | Interactive charts |
+| Python logging | Error handling and pipeline logging |
 
 ## Project Structure
 ```
@@ -99,11 +101,12 @@ No API key required — the NASA Exoplanet Archive is fully public.
 - Building an analytics layer with SQL aggregations on top of a database
 - Translating raw data visualizations into domain-specific insights using NASA exoplanet science context
 - Data storytelling through interactive Plotly visualizations in Streamlit
+- Implementing structured logging with Python's logging module across a multi-module project
 
 ## Roadmap
-- [ ] Add robust error handling and logging with Python's `logging` module
 - [ ] Expand inline code documentation and docstrings across all modules
 - [ ] Dockerized Deployment
+- [ ] Write logs to a persistent log file for pipeline run history
 
 ## Data Source
 NASA Exoplanet Archive TAP API — Planetary Systems table (ps), maintained by Caltech/IPAC on behalf of NASA.
