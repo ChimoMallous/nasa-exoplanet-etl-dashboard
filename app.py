@@ -77,7 +77,7 @@ with c2:
         yaxis=dict(showgrid=False)
     )
     st.plotly_chart(fig)
-    st.caption("The Kepler facility is the main source of discovered exoplanets, accounting for roughly 43% of confirmed exoplanets. The TESS facility has also contributed significantly, responsible for confirming around 14% of all discovered exoplanets.")
+    st.caption("The Kepler Mission leads discoveries, finding roughly 44% of confirmed worlds. TESS has also contributed significantly, confirming around 14% of exoplanets.")
 
 planets_by_year = count_exoplanets_discovered_by_year()
 fig = px.line(
