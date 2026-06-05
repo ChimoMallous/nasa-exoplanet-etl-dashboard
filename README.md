@@ -106,7 +106,7 @@ No API key required — the NASA Exoplanet Archive is fully public.
 - Total confirmed exoplanets discovered and total confirmed exoplanets discovered in 2026 counts as KPI metric
 - Line chart showing planetary discovery trends over time (including the Kepler mission spike)
 - Bar chart showing the frequency of use for all exoplanet discovery methods
-- Stacked bar chart showing exoplanet size category breakdown by discovery method
+- Bar chart showing confirmed exoplanet discovery counts by top 10 discovery facility
 - Analytical insights written beneath each chart interpreting the data in domain context
 - Fully transparent charts over a space-themed background
 

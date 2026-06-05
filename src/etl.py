@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-url = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY=select+pl_name,disc_year,discoverymethod,pl_rade,hostname+from+ps"
+url = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY=select+pl_name,disc_year,discoverymethod,disc_facility+from+ps"
 
 def extract(url):
     try:
@@ -27,8 +27,7 @@ def transform(r_data):
             "name": p.get("pl_name"),
             "discovery_year": p.get("disc_year"),  
             "discovery_method": p.get("discoverymethod"),
-            "planet_radius": p.get("pl_rade"),
-            "star_name": p.get("hostname")
+            "discovery_facility": p.get("disc_facility")
         }) 
     logger.info(f"Transformation successful. {len(t_data)} records transformed.")
     return t_data

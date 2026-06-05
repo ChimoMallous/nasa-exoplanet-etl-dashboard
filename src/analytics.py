@@ -20,6 +20,7 @@ def count_exoplanets_discovered():
         return result
     except Exception as e:
         logging.error(f"count_exoplanets_discovered failed: {e}")
+        raise
 
 def count_exoplanets_discovered_2026():
     try:
@@ -38,6 +39,7 @@ def count_exoplanets_discovered_2026():
         return result
     except Exception as e:
         logging.error(f"count_exoplanets_discovered_2026 failed: {e}")
+        raise
 
 def count_exoplanets_discovered_by_year():
     try:
@@ -57,8 +59,9 @@ def count_exoplanets_discovered_by_year():
         return result
     except Exception as e:
         logging.error(f"count_exoplanets_discovered_by_year failed: {e}")
+        raise
 
-def top_exoplanet_discovery_methods():
+def count_exoplanets_discovered_by_method():
     try:
         conn = sqlite3.connect('exoplanet_db')
 
@@ -76,26 +79,18 @@ def top_exoplanet_discovery_methods():
         return result
     except Exception as e:
         logging.error(f"top_exoplanet_discovery_methods failed: {e}")
+        raise
 
-def exoplanet_radius_by_discovery_method():
+def count_exoplanets_discovered_by_facility():
     try:
         conn = sqlite3.connect("exoplanet_db")
-
         query = """
-        SELECT 
-            discovery_method, 
-            CASE
-                WHEN planet_radius < 2 THEN 'Small (<2 Earth Radius)'
-                WHEN planet_radius < 6 THEN 'Medium (2-6 Earth Radius)'
-                WHEN planet_radius < 15 THEN 'Large (6-15 Earth Radius)'
-                ELSE 'Giant (>15 Earth Radius)'
-            END AS size_category,
-            COUNT(DISTINCT name) AS planet_count
+        SELECT discovery_facility, COUNT(DISTINCT name) AS exoplanets_discovered
         FROM exoplanets
-        WHERE planet_radius IS NOT NULL
-        GROUP BY discovery_method, size_category
-        ORDER BY discovery_method;
-        """ 
+        GROUP BY discovery_facility
+        ORDER BY exoplanets_discovered DESC
+        LIMIT 10;
+        """
 
         result = pd.read_sql(query, conn)
 
@@ -103,5 +98,5 @@ def exoplanet_radius_by_discovery_method():
 
         return result
     except Exception as e:
-        logging.error(f"exoplanet_radius_by_discovery_method failed: {e}")
-
+        logging.error(f"count_exoplanets_discovered_by_facility failed: {e}")
+        raise

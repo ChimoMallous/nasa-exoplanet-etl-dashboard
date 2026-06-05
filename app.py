@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.express as px
 import base64
 import os
-from src.analytics import count_exoplanets_discovered, count_exoplanets_discovered_2026, count_exoplanets_discovered_by_year, top_exoplanet_discovery_methods, exoplanet_radius_by_discovery_method
+from src.analytics import count_exoplanets_discovered, count_exoplanets_discovered_2026, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, count_exoplanets_discovered_by_facility
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
 
@@ -31,7 +31,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
 st.title("Exoplanet Analytics Dashboard")
 st.markdown(":shimmer[Data sourced from the NASA Exoplanet Archive API Planetary Systems table]")
 
@@ -46,14 +45,14 @@ with c2:
     st.metric(label="Total Confirmed Exoplanets Discovered This Year", value=total_exoplanets_2026.iloc[0, 0])
 
 with c1:
-    top_methods = top_exoplanet_discovery_methods()
+    top_methods = count_exoplanets_discovered_by_method()
     fig = px.bar(
         top_methods,
         x='discovery_method',
         y='method_frequency',
         title="Exoplanets Discovered by Method",
-        labels={'discovery_method': 'Discovery Method', 'method_frequency': 'Number of Exoplanet Discoveries'},
-        color_discrete_sequence=["#011BAE"]
+        labels={'discovery_method': 'Discovery Method', 'method_frequency': 'Number of Exoplanets Discovered'},
+        color_discrete_sequence=["#0122DB"]
         )
     fig.update_layout(
         yaxis=dict(showgrid=False)
@@ -62,44 +61,23 @@ with c1:
     st.caption("Transit photometry dominates exoplanet detection, accounting for over 70% of all confirmed discoveries due to the Kepler and TESS space telescopes.")
 
 with c2:
-    size_dist = exoplanet_radius_by_discovery_method()
+    top_facilities = count_exoplanets_discovered_by_facility()
     fig = px.bar(
-        size_dist,
-        x='planet_count',
-        y='discovery_method',
-        color='size_category',
-        orientation='h',  
-        barmode='stack',
-        custom_data=['planet_count'],
-        color_discrete_map={
-            "Small (<2 Earth Radius)": "#0B1D51",
-            "Medium (2-6 Earth Radius)": "#2D7FF9",
-            "Large (6-15 Earth Radius)": "#6FA8FF",
-            "Giant (>15 Earth Radius)": "#A6C8FF"
-        },
-        category_orders={"size_category": [
-            "Giant (>15 Earth Radius)",
-            "Large (6-15 Earth Radius)",
-            "Medium (2-6 Earth Radius)",
-            "Small (<2 Earth Radius)"
-        ]},
-        title="Exoplanet Size Breakdown by Discovery Method (%)",
+        top_facilities,
+        x='discovery_facility',
+        y='exoplanets_discovered',
+        title="Exoplanets Discovered by Facility (Top 10)",
         labels={
-            "planet_count": "Percentage of Discoveries (%)",
-            "discovery_method": "Discovery Method",
-            "size_category": "Planet Size"
-        }
+            "exoplanets_discovered": "Number of Exoplanets Discovered",
+            "discovery_facility": "Discovery Facility"
+        },
+        color_discrete_sequence=["#0122DB"]
     )
     fig.update_layout(
-        barnorm='percent',
-        xaxis=dict(showgrid=False), 
         yaxis=dict(showgrid=False)
     )
-    fig.update_traces(
-        hovertemplate="<b>%{fullData.name}</b><br>Number of Exoplanets Discovered: %{customdata[0]}<br>Percentage: %{x:.1f}%<extra></extra>"
-    )
     st.plotly_chart(fig)
-    st.caption("Direct imaging finds mostly giant and large exoplanets. It primarily captures young, massive gas giants far from their star, as these bright planets are the easiest to photograph.")
+    st.caption("The Kepler facility is the main source of discovered exoplanets, accounting for roughly 43% of confirmed exoplanets. The TESS facility has also contributed significantly, responsible for confirming around 14% of all discovered exoplanets.")
 
 planets_by_year = count_exoplanets_discovered_by_year()
 fig = px.line(
