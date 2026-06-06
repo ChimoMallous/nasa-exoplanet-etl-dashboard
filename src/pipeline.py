@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 def run():
     logger.info("Pipeline started.")
     r_data = extract(url)
-    t_data = transform(r_data)
-    if t_data:
-        load_to_db(t_data)
+    df = transform(r_data)
+    if df is not None and not df.empty:
+        load_to_db(df)
         logger.info("Pipeline completed successfully.")
     else:
         logger.error("Pipeline failed. No data loaded.")
