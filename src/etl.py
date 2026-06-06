@@ -42,7 +42,7 @@ def validate(df):
         return None
     df = df.copy()
     initial_count = len(df)
-    df = df.dropna(subset=["name", "discovery_year"])
+    df = df.dropna(subset=["name"])
     final_count = len(df)
     if final_count < initial_count:
         logger.info(f"Validation successful. Removed {initial_count - final_count} records.")
