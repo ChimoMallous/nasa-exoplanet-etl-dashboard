@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.express as px
 import base64
 import os
-from src.analytics import count_exoplanets_discovered, count_exoplanets_discovered_2026, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, count_exoplanets_discovered_by_facility
+from src.analytics import count_exoplanets_discovered, count_confirmed_hosts, newest_exoplanet_discovered, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, count_exoplanets_discovered_by_facility
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
 
@@ -12,39 +12,109 @@ if not os.path.exists("exoplanet_db"):
 
 with open("images/star_background.jpg", "rb") as f:
     encoded = base64.b64encode(f.read()).decode()
-
+    
 st.markdown(f"""
 <style>
+/* ── Background image ── */
 [data-testid="stAppViewContainer"] {{
     background-image: url("data:image/jpeg;base64,{encoded}");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 }}
-</style>
-""", unsafe_allow_html=True)
-st.markdown("""
-<style>
-* {
-    background-color: rgba(0, 0, 0, 0.05) !important;
-}
+
+/* ── Dark overlay ── */
+[data-testid="stAppViewContainer"]::before {{
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    z-index: 0;
+}}
+
+[data-testid="stAppViewContainer"] > * {{
+    position: relative;
+    z-index: 1;
+}}
+
+/* ── Strip default Streamlit backgrounds ── */
+.stApp, section.main, div.block-container,
+header, footer {{
+    background: transparent !important;
+    box-shadow: none !important;
+}}
+
+/* ── Glass cards on metrics only ── */
+[data-testid="stMetric"] {{
+    background: rgba(255, 255, 255, 0.07) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 16px !important;
+}}
+
+/* ── Glass bubble on captions ── */
+[data-testid="stCaptionContainer"] {{
+    background: rgba(255, 255, 255, 0.07) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px 14px !important;
+    margin-bottom: 7px !important;
+}}
+
+/* ── Sidebar glass ── */
+[data-testid="stSidebar"] {{
+    background: rgba(0, 0, 0, 0.40) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}}
+
+/* ── Transparent charts so nebula shows through ── */
+.js-plotly-plot .plotly,
+.js-plotly-plot .plotly .bg,
+.stPlotlyChart,
+.stPlotlyChart > div,
+iframe {{
+    background: transparent !important;
+    background-color: transparent !important;
+}}
+
+/* ── Text readable on dark bg ── */
+[data-testid="stMetricLabel"],
+[data-testid="stMetricValue"],
+[data-testid="stMetricDelta"],
+p, h1, h2, h3, label {{
+    color: rgba(255, 255, 255, 0.90) !important;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}}
 </style>
 """, unsafe_allow_html=True)
 
 st.title("Exoplanet Analytics Dashboard")
 st.markdown(":shimmer[Data sourced from the NASA Exoplanet Archive API Planetary Systems table]")
 
-c1, c2 = st.columns(2)
+c1, c2, c3 = st.columns(3)
 
 with c1:
     total_exoplanets = count_exoplanets_discovered()
     st.metric(label="Total Confirmed Exoplanets Discovered", value=total_exoplanets.iloc[0, 0])
 
 with c2:
-    total_exoplanets_2026 = count_exoplanets_discovered_2026()
-    st.metric(label="Total Confirmed Exoplanets Discovered This Year", value=total_exoplanets_2026.iloc[0, 0])
+    total_hosts = count_confirmed_hosts()
+    st.metric(label="Total Confirmed Hosts", value=total_hosts.iloc[0, 0])
 
-with c1:
+with c3:
+    newest_planet = newest_exoplanet_discovered()
+    st.metric(label=f"Recent Exoplanet Discovered ({newest_planet.iloc[0, 1]})", value=newest_planet.iloc[0, 0])
+
+g1, g2 = st.columns(2)
+
+with g1:
     top_methods = count_exoplanets_discovered_by_method()
     fig = px.bar(
         top_methods,
@@ -55,12 +125,16 @@ with c1:
         color_discrete_sequence=["#0122DB"]
         )
     fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color="white",
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(fig)
+    with st.container(border=True):
+        st.plotly_chart(fig)
     st.caption("Transit photometry dominates exoplanet detection, accounting for over 70% of all confirmed discoveries due to the Kepler and TESS space telescopes.")
 
-with c2:
+with g2:
     top_facilities = count_exoplanets_discovered_by_facility()
     fig = px.bar(
         top_facilities,
@@ -74,9 +148,13 @@ with c2:
         color_discrete_sequence=["#0122DB"]
     )
     fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color="white",
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(fig)
+    with st.container(border=True):
+        st.plotly_chart(fig)
     st.caption("The Kepler Mission leads discoveries, finding roughly 44% of confirmed worlds. TESS has also contributed significantly, confirming around 14% of exoplanets.")
 
 planets_by_year = count_exoplanets_discovered_by_year()
@@ -89,6 +167,9 @@ fig = px.line(
     color_discrete_sequence=["#0122DB"]
 )
 fig.update_layout(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font_color="white",
     yaxis=dict(showgrid=False)
 )
 fig.update_traces(
@@ -96,5 +177,6 @@ fig.update_traces(
     mode='lines+markers',
     marker=dict(size=5)
 )
-st.plotly_chart(fig)
+with st.container(border=True):
+    st.plotly_chart(fig)
 st.caption("The dramatic increases in exoplanet discoveries in 2014 and 2016 were driven by two massive data releases from NASA’s Kepler Space Telescope, which used the transit method to spot planets. In 2014, scientists verified over 700 new planets simultaneously by focusing on systems with multiple candidates. In 2016, an even larger spike occurred when NASA announced more than 1,200 new planets at once, a breakthrough made possible by an automated data-vetting software called Robovetter.")

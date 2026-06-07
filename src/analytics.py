@@ -22,14 +22,13 @@ def count_exoplanets_discovered():
         logging.error(f"count_exoplanets_discovered failed: {e}")
         raise
 
-def count_exoplanets_discovered_2026():
+def count_confirmed_hosts():
     try:
         conn = sqlite3.connect("exoplanet_db")
 
         query = """
-        SELECT COUNT(DISTINCT name) AS total_exoplanets_discovered_2026
-        FROM exoplanets
-        WHERE discovery_year = 2026;
+        SELECT COUNT(DISTINCT host_name) AS total_confirmed_hosts
+        FROM exoplanets;
         """
 
         result = pd.read_sql(query, conn)
@@ -38,7 +37,29 @@ def count_exoplanets_discovered_2026():
 
         return result
     except Exception as e:
-        logging.error(f"count_exoplanets_discovered_2026 failed: {e}")
+        logging.error(f"count_confirmed_hosts failed: {e}")
+        raise
+
+def newest_exoplanet_discovered():
+    try:
+        conn = sqlite3.connect("exoplanet_db")
+
+        query = """
+        SELECT name AS exoplanet_name, discovery_date, discovery_method
+        FROM exoplanets
+        WHERE discovery_year = 2026
+        GROUP BY name
+        ORDER BY discovery_date DESC, name ASC
+        LIMIT 1;
+        """
+
+        result = pd.read_sql(query, conn)
+
+        conn.close()
+
+        return result
+    except Exception as e:
+        logging.error(f"newest_exoplanet_discovered failed {e}")
         raise
 
 def count_exoplanets_discovered_by_year():

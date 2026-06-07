@@ -12,7 +12,8 @@ Built to develop real data engineering skills using a real-world NASA data sourc
 - Extracts confirmed exoplanet data from the NASA Exoplanet Archive TAP API
 - Transforms raw JSON responses into structured, clean records
 - Loads 6,000+ exoplanet records into a SQLite database
-- Visualizes exoplanet discovery trends and discovery method distributions through an interactive dashboard
+- Displays total confirmed exoplanets, confirmed host stars, and most recent 2026 discovery as KPI metrics
+- Visualizes exoplanets discovered by method, exoplanets discovered by facility, and exoplanets discovered by year
 - Implements structured error handling and logging across the ETL pipeline and analytics layer
 
 ## Tech Stack
@@ -103,7 +104,7 @@ No API key required — the NASA Exoplanet Archive is fully public.
 
 ## Features
 - Live data pulled from the NASA Exoplanet Archive Planetary Systems table
-- Total confirmed exoplanets discovered and total confirmed exoplanets discovered in 2026 counts as KPI metric
+- Total confirmed exoplanets, confirmed host stars, and most recent discovery as KPI metrics
 - Line chart showing planetary discovery trends over time (including the Kepler mission spike)
 - Bar chart showing the frequency of use for all exoplanet discovery methods
 - Bar chart showing confirmed exoplanet discovery counts by top 10 discovery facility
@@ -126,3 +127,5 @@ No API key required — the NASA Exoplanet Archive is fully public.
 
 ## Data Source
 NASA Exoplanet Archive TAP API — Planetary Systems table (ps), maintained by Caltech/IPAC on behalf of NASA.
+Fields extracted: pl_name, hostname, disc_year, releasedate, discoverymethod, disc_facility
+

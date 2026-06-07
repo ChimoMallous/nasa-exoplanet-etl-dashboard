@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-url = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY=select+pl_name,disc_year,discoverymethod,disc_facility+from+ps"
+url = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY=select+pl_name,hostname,disc_year,releasedate,discoverymethod,disc_facility+from+ps"
 
 def extract(url):
     try:
@@ -23,16 +23,19 @@ def transform(r_data):
         return None
     df = pd.DataFrame([{
         "name": p.get("pl_name"),
-        "discovery_year": p.get("disc_year"),  
+        "host_name": p.get("hostname"),
+        "discovery_year": p.get("disc_year"),
+        "discovery_date": p.get("releasedate"),
         "discovery_method": p.get("discoverymethod"),
         "discovery_facility": p.get("disc_facility")
     } for p in r_data])
-    for col in ["name", "discovery_year", "discovery_method", "discovery_facility"]:
+    for col in ["name", "host_name", "discovery_year", "discovery_date", "discovery_method", "discovery_facility"]:
         df[col] = df[col].where(df[col].notnull(), None)
-    for col in ["name", "discovery_method", "discovery_facility"]:
+    for col in ["name", "host_name", "discovery_method", "discovery_facility"]:
         df[col] = df[col].astype("string").str.strip()
         df[col] = df[col].replace("", pd.NA)
     df["discovery_year"] = pd.to_numeric(df["discovery_year"], errors="coerce").astype("Int64")
+    df["discovery_date"] = pd.to_datetime(df["discovery_date"], errors="coerce").dt.date
     logger.info(f"Transformation successful. {len(df)} records available")
     return df
 
@@ -43,6 +46,8 @@ def validate(df):
     df = df.copy()
     initial_count = len(df)
     df = df.dropna(subset=["name"])
+    df = df[(df["discovery_year"].isna()) | ((df["discovery_year"] >= 1900) & (df["discovery_year"] <= 2100))]
+    df = df.drop_duplicates(subset=["name"])
     final_count = len(df)
     if final_count < initial_count:
         logger.info(f"Validation successful. Removed {initial_count - final_count} records.")
