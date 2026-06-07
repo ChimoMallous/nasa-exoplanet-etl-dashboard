@@ -110,6 +110,7 @@ No API key required — the NASA Exoplanet Archive is fully public.
 - Bar chart showing confirmed exoplanet discovery counts by top 10 discovery facility
 - Analytical insights written beneath each chart interpreting the data in domain context
 - Fully transparent charts over a space-themed background
+- Data last retrieved timestamp displayed on dashboard
 
 ## What I Learned
 - Building a modular ETL pipeline with separation of concerns across extract, transform, and load
