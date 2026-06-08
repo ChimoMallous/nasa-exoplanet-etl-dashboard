@@ -1,18 +1,18 @@
 # Exoplanet Analytics Dashboard
-
+ 
 [Live Demo](https://nasa-exoplanet-etl-dashboard-0.streamlit.app/)
-
+ 
 ## Overview
 An end-to-end ETL pipeline and interactive analytics dashboard built on real NASA exoplanet data.
 Extracts live data from the NASA Exoplanet Archive API, stores it in a local SQLite database, and visualizes discovery trends through an interactive Streamlit dashboard.
-
+ 
 Built to develop real data engineering skills using a real-world NASA data source.
-
+ 
 ## What It Does
-- Extracts confirmed exoplanet data from the NASA Exoplanet Archive TAP API
+- Extracts 39,000+ confirmed exoplanet records from the NASA Exoplanet Archive TAP API
 - Transforms raw JSON responses into structured, clean records
-- Loads 6,000+ exoplanet records into a SQLite database
-- Displays total confirmed exoplanets, confirmed host stars, and most recent 2026 discovery as KPI metrics
+- Loads 6,000+ unique exoplanet records into a SQLite database
+- Displays total confirmed exoplanets, confirmed host stars, and most recent discovery as KPI metrics
 - Visualizes exoplanets discovered by method, exoplanets discovered by facility, and exoplanets discovered by year
 - Implements structured error handling and logging across the ETL pipeline and analytics layer
 
@@ -26,7 +26,7 @@ Built to develop real data engineering skills using a real-world NASA data sourc
 | Streamlit | Dashboard interface |
 | Plotly | Interactive charts |
 | Python logging | Error handling and pipeline logging |
-
+ 
 ## Project Structure
 ```
 exoplanet-analytics/
@@ -34,18 +34,17 @@ exoplanet-analytics/
 │   └── config.toml
 ├── src/
 │   ├── etl.py
-│   └── analytics.py
+│   ├── analytics.py
 │   └── pipeline.py
 ├── images/
-│   └── star_background.jpg
+│   ├── star_background.jpg
 │   └── star_dashboard.jpg
 ├── app.py
 ├── requirements.txt
 └── README.md
 ```
-
+ 
 ## Data Flow
-
 ```
 ┌──────────────────────────────┐
 │  NASA Exoplanet Archive API  │
@@ -80,28 +79,28 @@ exoplanet-analytics/
 │    (Streamlit Dashboard)     │
 └──────────────────────────────┘
 ```
-
-The dashboard automatically runs the ETL pipeline and creates the SQLite database on first launch if pipeline.py was not ran to begin with.
-
+ 
+The dashboard automatically runs the ETL pipeline and creates the SQLite database on first launch if `pipeline.py` was not run beforehand.
+ 
 ## Getting Started
-
+ 
 Install dependencies:
 ```
 pip install -r requirements.txt
 ```
-
+ 
 Run the ETL pipeline to populate the database:
 ```
 python src/pipeline.py
 ```
-
+ 
 Launch the dashboard:
 ```
 streamlit run app.py
 ```
-
+ 
 No API key required — the NASA Exoplanet Archive is fully public.
-
+ 
 ## Features
 - Live data pulled from the NASA Exoplanet Archive Planetary Systems table
 - Total confirmed exoplanets, confirmed host stars, and most recent discovery as KPI metrics
@@ -119,14 +118,8 @@ No API key required — the NASA Exoplanet Archive is fully public.
 - Building an analytics layer with SQL aggregations on top of a database
 - Translating raw data visualizations into domain-specific insights using NASA exoplanet science context
 - Data storytelling through interactive Plotly visualizations in Streamlit
-- Binning continuous data into domain-relevant categories using SQL CASE statements
 - Implementing structured logging with Python's logging module across a multi-module project
-
-
-## Roadmap
-- [ ] Expand inline code documentation and docstrings across all modules
 
 ## Data Source
 NASA Exoplanet Archive TAP API — Planetary Systems table (ps), maintained by Caltech/IPAC on behalf of NASA.
 Fields extracted: pl_name, hostname, disc_year, releasedate, discoverymethod, disc_facility
-

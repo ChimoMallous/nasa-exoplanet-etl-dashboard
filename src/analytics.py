@@ -10,17 +10,23 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 def count_exoplanets_discovered(): 
+    """
+    Queries the database for the total number of unique confirmed exoplanets.
+    -
+    Returns:
+        DataFrame: Single row with column total_exoplanets_discovered.
+    """
     try:
-        conn = sqlite3.connect(DB_PATH) # Create connection to database
+        conn = sqlite3.connect(DB_PATH)
 
         query = """
         SELECT COUNT(DISTINCT name) AS total_exoplanets_discovered
         FROM exoplanets;
-        """ # Create query to count the total amount of exoplanet records
+        """ 
 
-        result = pd.read_sql(query, conn) # Execute query and store results in DataFrame
+        result = pd.read_sql(query, conn)
 
-        conn.close() # Close connection
+        conn.close() 
         
         return result
     except Exception as e:
@@ -28,6 +34,12 @@ def count_exoplanets_discovered():
         raise
 
 def count_confirmed_hosts():
+    """
+    Queries the database for the total number of unique confirmed host stars.
+    -
+    Returns:
+        DataFrame: Single row with column total_confirmed_hosts.
+    """
     try:
         conn = sqlite3.connect(DB_PATH)
 
@@ -46,6 +58,13 @@ def count_confirmed_hosts():
         raise
 
 def newest_exoplanet_discovered():
+    """
+    Queries the database for the most recently discovered unique exoplanet
+    based on the latest discovery year and discovery date in the dataset.
+    -
+    Returns:
+        DataFrame: Single row with columns exoplanet_name, discovery_date, and discovery_method.
+    """
     try:
         conn = sqlite3.connect(DB_PATH)
 
@@ -68,6 +87,13 @@ def newest_exoplanet_discovered():
         raise
 
 def count_exoplanets_discovered_by_year():
+    """
+    Queries the database for the number of unique exoplanets discovered per year,
+    ordered chronologically.
+    -
+    Returns:
+        DataFrame: Rows with columns year and total_exoplanets_discovered, ordered by year ascending.
+    """
     try:
         conn = sqlite3.connect(DB_PATH)
 
@@ -88,6 +114,13 @@ def count_exoplanets_discovered_by_year():
         raise
 
 def count_exoplanets_discovered_by_method():
+    """
+    Queries the database for the number of unique exoplanet discovered per detection method,
+    ordered by frequency descending.
+    -
+    Returns:
+        DataFrame: Rows with columns discovery_method and method_frequency, ordered by method_frequency descending.
+    """
     try:
         conn = sqlite3.connect(DB_PATH)
 
@@ -104,12 +137,19 @@ def count_exoplanets_discovered_by_method():
 
         return result
     except Exception as e:
-        logger.error(f"top_exoplanet_discovery_methods failed: {e}")
+        logger.error(f"count_exoplanets_discovered_by_method failed: {e}")
         raise
 
 def count_exoplanets_discovered_by_facility():
+    """
+    Queries the database for the top 10 discovery facilities by number of unique exoplanets confirmed.
+    -
+    Returns:
+        DataFrame: Rows with columns discovery_facility and exoplanets_discovered, ordered by exoplanets_discovered descending.
+    """
     try:
         conn = sqlite3.connect(DB_PATH)
+        
         query = """
         SELECT discovery_facility, COUNT(DISTINCT name) AS exoplanets_discovered
         FROM exoplanets

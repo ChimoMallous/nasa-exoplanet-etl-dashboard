@@ -17,6 +17,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def run():
+    """
+    Orchestrates the ETL pipeline by running extract, transform, and load functions in sequence.
+    Logs pipeline status at each stage.
+    """
     logger.info("Pipeline started.")
     r_data = extract()
     df = transform(r_data)

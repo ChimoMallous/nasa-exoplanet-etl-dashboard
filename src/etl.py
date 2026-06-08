@@ -10,6 +10,13 @@ QUERY = "SELECT pl_name,hostname,disc_year,releasedate,discoverymethod,disc_faci
 DB_PATH = "exoplanet_db"
 
 def extract():
+    """
+    Sends a POST request to the NASA Exoplanet Archive TAP API
+    and retrieves confirmed exoplanet data in JSON format.
+    -
+    Returns:
+        list: Raw JSON response as a list of dicts, or None if the request fails.
+    """
     try:
         response = requests.post(
             BASE_URL,
@@ -18,8 +25,7 @@ def extract():
                 "LANG": "ADQL",
                 "FORMAT": "json",
                 "QUERY": QUERY
-            }, 
-            timeout=30
+            }, timeout=30
         )
         response.raise_for_status()
         logger.info(f"Extraction successful. {len(response.json())} records retrieved.")
@@ -29,6 +35,15 @@ def extract():
         return None
 
 def transform(r_data):
+    """
+    Converts raw JSON data into a cleaned, typed Pandas DataFrame.
+    -
+    Args:
+        r_data (list): Raw JSON response from extract().
+    -
+    Returns:
+        DataFrame: Cleaned exoplanet records, or None if input is empty.
+    """
     if not r_data:
         logger.warning("No data to transform.")
         return None
@@ -51,6 +66,17 @@ def transform(r_data):
     return df
 
 def validate(df):
+    """
+    Applies data quality checks to the transformed DataFrame.
+    Drops records missing a planet name, filters out unrealistic discovery years,
+    and removes duplicate planet entries to only pull unique planet data.
+    -
+    Args:
+        df (DataFrame): Transformed exoplanet records from transform().
+    -
+    Returns:
+        DataFrame: Validated exoplanet records, or None if input is empty.
+    """
     if df is None or df.empty:
         logger.warning("No data to validate.")
         return None
@@ -67,6 +93,16 @@ def validate(df):
     return df
 
 def load_to_db(df):
+    """
+    Validates and loads the transformed DataFrame into a SQLite database.
+    Replaces the existing table on each run to keep data current with API.
+    -
+    Args:
+        df (DataFrame): Transformed exoplanet records from transform().
+    -
+    Returns:
+        DataFrame: The validated exoplanet records that were loaded, or None if load fails.
+    """
     if df is None or df.empty:
         logger.warning("No data to load.")
         return
@@ -75,16 +111,17 @@ def load_to_db(df):
         if df is None or df.empty:
             logger.warning("No valid data to load after validation.")
             return
-        conn = sqlite3.connect(DB_PATH) # Create connection to database
+        conn = sqlite3.connect(DB_PATH) 
         df.to_sql(
-            "exoplanets", # Store dataframe as SQL table
-            conn, # Make connection to database
-            if_exists ="replace", # Delete old table and create new table 
-            index=False # Prevents creation of index column
+            "exoplanets", 
+            conn, 
+            if_exists = "replace", # Replace table on each run to stay current with the API
+            index=False 
         )
-        conn.close() # Close connection
+        conn.close() 
         logger.info(f"Load successful. {len(df)} records saved to database.")
         return df
     except Exception as e:
         logger.error(f"Load failed: {e}")
+        raise
 
