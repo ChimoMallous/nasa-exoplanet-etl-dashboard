@@ -1,8 +1,10 @@
-try: 
-    from src.etl import extract, transform, load_to_db, url
-except ImportError:
-    from etl import extract, transform, load_to_db, url
 import logging
+
+try: 
+    from src.etl import extract, transform, load_to_db
+except ImportError:
+    from etl import extract, transform, load_to_db
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -16,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def run():
     logger.info("Pipeline started.")
-    r_data = extract(url)
+    r_data = extract()
     df = transform(r_data)
     if df is not None and not df.empty:
         load_to_db(df)

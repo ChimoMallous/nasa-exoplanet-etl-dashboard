@@ -5,11 +5,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-url = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY=select+pl_name,hostname,disc_year,releasedate,discoverymethod,disc_facility+from+ps"
+BASE_URL = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
+QUERY = "SELECT pl_name,hostname,disc_year,releasedate,discoverymethod,disc_facility FROM ps"
+DB_PATH = "exoplanet_db"
 
-def extract(url):
+def extract():
     try:
-        response = requests.get(url, timeout=30)
+        response = requests.post(
+            BASE_URL,
+            data={
+                "REQUEST": "doQuery",
+                "LANG": "ADQL",
+                "FORMAT": "json",
+                "QUERY": QUERY
+            }, 
+            timeout=30
+        )
         response.raise_for_status()
         logger.info(f"Extraction successful. {len(response.json())} records retrieved.")
         return response.json()
@@ -64,7 +75,7 @@ def load_to_db(df):
         if df is None or df.empty:
             logger.warning("No valid data to load after validation.")
             return
-        conn = sqlite3.connect("exoplanet_db") # Create connection to database
+        conn = sqlite3.connect(DB_PATH) # Create connection to database
         df.to_sql(
             "exoplanets", # Store dataframe as SQL table
             conn, # Make connection to database
