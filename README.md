@@ -10,14 +10,32 @@ Built to develop real data engineering skills using a real-world NASA data sourc
  
 ## What It Does
 - Extracts 39,000+ confirmed exoplanet records from the NASA Exoplanet Archive TAP API
-- Transforms raw JSON responses into structured, clean records
+- Transforms raw JSON responses into structured, typed records
+- Validates records by dropping nulls, filtering invalid years, and deduplicating by planet name
 - Loads 6,000+ unique exoplanet records into a SQLite database
-- Displays total confirmed exoplanets, confirmed host stars, and most recent discovery as KPI metrics
-- Visualizes exoplanets discovered by method, exoplanets discovered by facility, and exoplanets discovered by year
+- Displays total confirmed exoplanets, total confirmed host stars, and most recently discovered exoplanet as KPI metrics
+- Visualizes exoplanets discovered by method, facility, and year
 - Implements structured error handling and logging across the ETL pipeline and analytics layer
 
 ## Data Pipeline Architecture
-![Exoplanet ETL Pipeline Architecture](images/nasa-exoplanet-etl-pipeline-architecture(d).drawio.png)
+![Exoplanet ETL Pipeline Architecture](images/exoplanet-etl-pipeline-architecture(dark).drawio.png)
+ 
+## Project Structure
+```
+exoplanet-analytics/
+├── .streamlit/
+│   └── config.toml
+├── src/
+│   ├── etl.py
+│   ├── analytics.py
+│   └── pipeline.py
+├── images/
+│   ├── star-background.jpg
+│   └── exoplanet-etl-pipeline-architecture(dark).png
+├── app.py
+├── requirements.txt
+└── README.md
+```
 
 ## Tech Stack
 | Tool | Purpose |
@@ -30,25 +48,6 @@ Built to develop real data engineering skills using a real-world NASA data sourc
 | Plotly | Interactive charts |
 | Python logging | Error handling and pipeline logging |
  
-## Project Structure
-```
-exoplanet-analytics/
-├── .streamlit/
-│   └── config.toml
-├── src/
-│   ├── etl.py
-│   ├── analytics.py
-│   └── pipeline.py
-├── images/
-│   ├── star_background.jpg
-│   └── star_dashboard.jpg
-├── app.py
-├── requirements.txt
-└── README.md
-```
- 
-The dashboard automatically runs the ETL pipeline and creates the SQLite database on first launch if `pipeline.py` was not run beforehand.
- 
 ## Getting Started
  
 Install dependencies:
@@ -60,6 +59,7 @@ Run the ETL pipeline to populate the database:
 ```
 python src/pipeline.py
 ```
+> The dashboard will also run the pipeline automatically on first launch if this step is skipped.
  
 Launch the dashboard:
 ```
