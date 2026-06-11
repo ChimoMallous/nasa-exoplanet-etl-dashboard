@@ -17,7 +17,7 @@ Built to develop real data engineering skills using a real-world NASA data sourc
 - Implements structured error handling and logging across the ETL pipeline and analytics layer
 
 ## Data Pipeline Architecture
-![Exoplanet ETL Pipeline Architecture](images/nasa-exoplanet-etl-pipeline-architecture(d).drawio.png)
+![Exoplanet ETL Pipeline Architecture](images/exoplanet-etl-pipeline-architecture(dark).drawio.png)
 
 ## Tech Stack
 | Tool | Purpose |
@@ -40,8 +40,8 @@ exoplanet-analytics/
 │   ├── analytics.py
 │   └── pipeline.py
 ├── images/
-│   ├── star_background.jpg
-│   └── star_dashboard.jpg
+│   ├── star-background.jpg
+│   └── exoplanet-etl-pipeline-architecture(dark).png
 ├── app.py
 ├── requirements.txt
 └── README.md
