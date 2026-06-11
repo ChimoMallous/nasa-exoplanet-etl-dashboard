@@ -16,6 +16,9 @@ Built to develop real data engineering skills using a real-world NASA data sourc
 - Visualizes exoplanets discovered by method, exoplanets discovered by facility, and exoplanets discovered by year
 - Implements structured error handling and logging across the ETL pipeline and analytics layer
 
+## Data Pipeline Architecture
+![Exoplanet ETL Pipeline Architecture](images/nasa-exoplanet-etl-pipeline-architecture(d).drawio.png)
+
 ## Tech Stack
 | Tool | Purpose |
 |------|---------|
@@ -42,42 +45,6 @@ exoplanet-analytics/
 ├── app.py
 ├── requirements.txt
 └── README.md
-```
- 
-## Data Flow
-```
-┌──────────────────────────────┐
-│  NASA Exoplanet Archive API  │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│         src/etl.py           │
-│  (Extract, Transform, Load)  │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│       src/pipeline.py        │
-│      (Orchestrates ETL)      │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│       SQLite Database        │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│      src/analytics.py        │
-│       (SQL Queries)          │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│            app.py            │
-│    (Streamlit Dashboard)     │
-└──────────────────────────────┘
 ```
  
 The dashboard automatically runs the ETL pipeline and creates the SQLite database on first launch if `pipeline.py` was not run beforehand.

@@ -55,13 +55,11 @@ def transform(r_data):
         "discovery_method": p.get("discoverymethod"),
         "discovery_facility": p.get("disc_facility")
     } for p in r_data])
-    for col in ["name", "host_name", "discovery_year", "discovery_date", "discovery_method", "discovery_facility"]:
-        df[col] = df[col].where(df[col].notnull(), None)
     for col in ["name", "host_name", "discovery_method", "discovery_facility"]:
         df[col] = df[col].astype("string").str.strip()
         df[col] = df[col].replace("", pd.NA)
     df["discovery_year"] = pd.to_numeric(df["discovery_year"], errors="coerce").astype("Int64")
-    df["discovery_date"] = pd.to_datetime(df["discovery_date"], errors="coerce").dt.date
+    df["discovery_date"] = pd.to_datetime(df["discovery_date"], errors="coerce").dt.strftime('%Y-%m-%d')
     logger.info(f"Transformation successful. {len(df)} records available")
     return df
 

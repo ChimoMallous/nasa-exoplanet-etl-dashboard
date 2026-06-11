@@ -10,6 +10,82 @@ from src.analytics import count_exoplanets_discovered, count_confirmed_hosts, ne
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
 
+with open("images/star-background.jpg", "rb") as f:
+    encoded = base64.b64encode(f.read()).decode()
+st.markdown(f"""
+<style>
+/* ── Background image ── */
+[data-testid="stAppViewContainer"] {{
+    background-image: url("data:image/jpeg;base64,{encoded}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}}
+/* ── Dark overlay ── */
+[data-testid="stAppViewContainer"]::before {{
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    z-index: 0;
+}}
+[data-testid="stAppViewContainer"] > * {{
+    position: relative;
+    z-index: 1;
+}}
+/* ── Strip default Streamlit backgrounds ── */
+.stApp, section.main, div.block-container,
+header, footer {{
+    background: transparent !important;
+    box-shadow: none !important;
+}}
+/* ── Glass cards on metrics only ── */
+[data-testid="stMetric"] {{
+    background: rgba(255, 255, 255, 0.07) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 16px !important;
+}}
+/* ── Glass bubble on captions ── */
+[data-testid="stCaptionContainer"] {{
+    background: rgba(255, 255, 255, 0.07) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px 14px !important;
+    margin-bottom: 7px !important;
+}}
+/* ── Sidebar glass ── */
+[data-testid="stSidebar"] {{
+    background: rgba(0, 0, 0, 0.40) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}}
+/* ── Transparent charts so nebula shows through ── */
+.js-plotly-plot .plotly,
+.js-plotly-plot .plotly .bg,
+.stPlotlyChart,
+.stPlotlyChart > div,
+iframe {{
+    background: transparent !important;
+    background-color: transparent !important;
+}}
+/* ── Text readable on dark bg ── */
+[data-testid="stMetricLabel"],
+[data-testid="stMetricValue"],
+[data-testid="stMetricDelta"],
+p, h1, h2, h3, label {{
+    color: rgba(255, 255, 255, 0.90) !important;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}}
+</style>
+""", unsafe_allow_html=True)
+
 if not os.path.exists(DB_PATH):
     from src.pipeline import run
     run()
@@ -20,7 +96,7 @@ else:
     last_retrieved = "N/A"
 
 st.title("Exoplanet Analytics Dashboard")
-st.markdown(f":shimmer[Data retrieved via the NASA Exoplanet Archive API (Planetary Systems Table)]")
+st.markdown(f":shimmer[Data last retrieved {last_retrieved} via the NASA Exoplanet Archive API (Planetary Systems Table)]")
 
 c1, c2, c3 = st.columns(3)
 
@@ -104,81 +180,3 @@ fig.update_traces(
 with st.container(border=True):
     st.plotly_chart(fig)
 st.caption("The dramatic increases in exoplanet discoveries in 2014 and 2016 were driven by two massive data releases from NASA’s Kepler Space Telescope, which used the transit method to spot exoplanets. In 2014, scientists verified over 700 new exoplanets simultaneously by focusing on systems with multiple candidates. In 2016, an even larger spike occurred when NASA announced more than 1,200 new planets at once, a breakthrough made possible by an automated data-vetting software called Robovetter.")
-
-st.markdown(f":grey[Data last retrieved on {last_retrieved}]")
-
-with open("images/star_background.jpg", "rb") as f:
-    encoded = base64.b64encode(f.read()).decode()
-st.markdown(f"""
-<style>
-/* ── Background image ── */
-[data-testid="stAppViewContainer"] {{
-    background-image: url("data:image/jpeg;base64,{encoded}");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}}
-/* ── Dark overlay ── */
-[data-testid="stAppViewContainer"]::before {{
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    pointer-events: none;
-    z-index: 0;
-}}
-[data-testid="stAppViewContainer"] > * {{
-    position: relative;
-    z-index: 1;
-}}
-/* ── Strip default Streamlit backgrounds ── */
-.stApp, section.main, div.block-container,
-header, footer {{
-    background: transparent !important;
-    box-shadow: none !important;
-}}
-/* ── Glass cards on metrics only ── */
-[data-testid="stMetric"] {{
-    background: rgba(255, 255, 255, 0.07) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 14px;
-    padding: 16px !important;
-}}
-/* ── Glass bubble on captions ── */
-[data-testid="stCaptionContainer"] {{
-    background: rgba(255, 255, 255, 0.07) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    padding: 10px 14px !important;
-    margin-bottom: 7px !important;
-}}
-/* ── Sidebar glass ── */
-[data-testid="stSidebar"] {{
-    background: rgba(0, 0, 0, 0.40) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-}}
-/* ── Transparent charts so nebula shows through ── */
-.js-plotly-plot .plotly,
-.js-plotly-plot .plotly .bg,
-.stPlotlyChart,
-.stPlotlyChart > div,
-iframe {{
-    background: transparent !important;
-    background-color: transparent !important;
-}}
-/* ── Text readable on dark bg ── */
-[data-testid="stMetricLabel"],
-[data-testid="stMetricValue"],
-[data-testid="stMetricDelta"],
-p, h1, h2, h3, label {{
-    color: rgba(255, 255, 255, 0.90) !important;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
-}}
-</style>
-""", unsafe_allow_html=True)
