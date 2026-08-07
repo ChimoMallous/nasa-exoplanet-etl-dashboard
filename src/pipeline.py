@@ -1,9 +1,9 @@
 import logging
 
 try: 
-    from src.etl import extract, transform, load_to_db
+    from src.etl import extract, transform, validate, load_to_db
 except ImportError:
-    from etl import extract, transform, load_to_db
+    from etl import extract, transform, validate, load_to_db
 
 
 logging.basicConfig(
@@ -24,6 +24,7 @@ def run():
     logger.info("Pipeline started.")
     r_data = extract()
     df = transform(r_data)
+    df = validate(df)
     if df is not None and not df.empty:
         load_to_db(df)
         logger.info("Pipeline completed successfully.")

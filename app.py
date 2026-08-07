@@ -3,10 +3,11 @@ import plotly.express as px
 import base64
 import os
 
-from datetime import datetime
+import datetime
 
 from src.etl import DB_PATH
 from src.analytics import count_exoplanets_discovered, count_confirmed_hosts, newest_exoplanet_discovered, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, count_exoplanets_discovered_by_facility
+from src.pipeline import run
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
 
@@ -86,17 +87,15 @@ p, h1, h2, h3, label {{
 </style>
 """, unsafe_allow_html=True)
 
-if not os.path.exists(DB_PATH):
-    from src.pipeline import run
-    run()
-
-if os.path.exists(DB_PATH):
-    last_retrieved = datetime.fromtimestamp(os.path.getmtime(DB_PATH)).strftime("%Y-%m-%d")
-else:
-    last_retrieved = "N/A"
+def db_date():
+    return datetime.date.fromtimestamp(os.path.getmtime(DB_PATH))
+if not os.path.exists(DB_PATH) or db_date() < datetime.date.today():
+    with st.spinner("Retrieving latest data from today's NASA Exoplanet Archive"):
+        run()
+last_retrieved = db_date()
 
 st.title("Exoplanet Analytics Dashboard")
-st.markdown(f":shimmer[Data last retrieved {last_retrieved} via the NASA Exoplanet Archive API (Planetary Systems Table)]")
+st.markdown(f":shimmer[Data last retrieved {last_retrieved} via the NASA Exoplanet Archive (TAP/ADQL) API]")
 
 c1, c2, c3 = st.columns(3)
 
@@ -180,3 +179,19 @@ fig.update_traces(
 with st.container(border=True):
     st.plotly_chart(fig)
 st.caption("The dramatic increases in exoplanet discoveries in 2014 and 2016 were driven by two massive data releases from NASA’s Kepler Space Telescope, which used the transit method to spot exoplanets. In 2014, scientists verified over 700 new exoplanets simultaneously by focusing on systems with multiple candidates. In 2016, an even larger spike occurred when NASA announced more than 1,200 new planets at once, a breakthrough made possible by an automated data-vetting software called Robovetter.")
+
+with st.container(border=True):
+    st.markdown(
+        """
+        <div style="text-align: center; font-size: 14px; color: rgba(128,128,128,0.9);">
+            Built by Efthimios Mallous
+            &nbsp;·&nbsp;
+            <a href="https://github.com/ChimoMallous" target="_blank" style="color: #4A9EFF; text-decoration: none;">GitHub</a>
+            &nbsp;·&nbsp;
+            <a href="https://www.linkedin.com/in/efthimios-mallous-07b4b6378/" target="_blank" style="color: #4A9EFF; text-decoration: none;">LinkedIn</a>
+            <br>
+            <span style="font-size: 14px;">Data: NASA Exoplanet Archive (TAP/ADQL) API &nbsp;·&nbsp; Updated daily via ETL pipeline</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
