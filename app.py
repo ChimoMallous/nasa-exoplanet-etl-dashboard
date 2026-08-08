@@ -6,7 +6,7 @@ import os
 import datetime
 
 from src.etl import DB_PATH
-from src.analytics import count_exoplanets_discovered, count_confirmed_hosts, newest_exoplanet_discovered, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, count_exoplanets_discovered_by_facility
+from src.analytics import count_exoplanets_discovered, count_confirmed_hosts, recent_exoplanet_discovered, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, count_exoplanets_discovered_by_facility
 from src.pipeline import run
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
@@ -108,8 +108,8 @@ with c2:
     st.metric(label="Total Confirmed Hosts", value=total_hosts.iloc[0, 0])
 
 with c3:
-    newest_planet = newest_exoplanet_discovered()
-    st.metric(label=f"Recently Discovered Exoplanet ({newest_planet.iloc[0, 1]})", value=newest_planet.iloc[0, 0])
+    recent_planet = recent_exoplanet_discovered()
+    st.metric(label=f"Recently Discovered Exoplanet ({recent_planet.iloc[0, 1]})", value=recent_planet.iloc[0, 0])
 
 g1, g2 = st.columns(2)
 

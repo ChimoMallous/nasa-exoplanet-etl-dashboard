@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
 QUERY = (
-        "SELECT pl_name,hostname,disc_year,releasedate,discoverymethod,disc_facility "
+        "SELECT pl_name,hostname,disc_year,disc_pubdate,discoverymethod,disc_facility "
         "FROM ps WHERE default_flag = 1"
 )
 DB_PATH = "exoplanet_db"
@@ -54,15 +54,14 @@ def transform(r_data):
         "name": p.get("pl_name"),
         "host_name": p.get("hostname"),
         "discovery_year": p.get("disc_year"),
-        "release_date": p.get("releasedate"),
+        "discovery_pubdate": p.get("disc_pubdate"),
         "discovery_method": p.get("discoverymethod"),
         "discovery_facility": p.get("disc_facility")
     } for p in r_data])
-    for col in ["name", "host_name", "discovery_method", "discovery_facility"]:
+    for col in ["name", "host_name", "discovery_pubdate", "discovery_method", "discovery_facility"]:
         df[col] = df[col].astype("string").str.strip()
         df[col] = df[col].replace("", pd.NA)
     df["discovery_year"] = pd.to_numeric(df["discovery_year"], errors="coerce").astype("Int64")
-    df["release_date"] = pd.to_datetime(df["release_date"], errors="coerce").dt.strftime('%Y-%m-%d')
     logger.info(f"Transformation successful. {len(df)} records available")
     return df
 
@@ -88,7 +87,7 @@ def validate(df):
     dupes = int(df["name"].duplicated().sum())
     if dupes:
         logger.warning(f"{dupes} duplicate planet names found after extraction - check default_flag in QUERY")
-        df = df.sort_values("release_date", ascending=False).drop_duplicates(subset=["name"], keep="first")
+        df = df.drop_duplicates(subset=["name"], keep="first")
     final_count = len(df)
     if final_count < initial_count:
         logger.info(f"Validation successful. Removed {initial_count - final_count} records.")

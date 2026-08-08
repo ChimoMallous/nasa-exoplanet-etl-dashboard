@@ -9,13 +9,15 @@ Extracts live data from the NASA Exoplanet Archive API, stores it in a local SQL
 Built to develop real data engineering skills using a real-world NASA data source.
  
 ## What It Does
-- Extracts 39,000+ confirmed exoplanet records from the NASA Exoplanet Archive TAP API
+- Extracts confirmed exoplanet records from the NASA Exoplanet Archive TAP API
+- Filters 39,000+ parameter-set rows to one default record per planet via default_flag = 1
 - Transforms raw JSON responses into structured, typed records
 - Validates records by dropping nulls, filtering invalid years, and deduplicating by planet name
-- Loads 6,000+ unique exoplanet records into a SQLite database
-- Displays total confirmed exoplanets, total confirmed host stars, and most recently discovered exoplanet as KPI metrics
+- Loads 6,300+ unique exoplanet records into a SQLite database
+- Displays total confirmed exoplanets, total confirmed host stars, and recently discovered exoplanet as KPI metrics
 - Visualizes exoplanets discovered by method, facility, and year
 - Implements structured error handling and logging across the ETL pipeline and analytics layer
+- Automatically re-runs the pipeline on page load when the local database is more than a day old
 
 ## Data Pipeline Architecture
 ![Exoplanet ETL Pipeline Architecture](images/exoplanet-etl-pipeline-architecture(dark).drawio.png)
@@ -31,7 +33,7 @@ exoplanet-analytics/
 │   └── pipeline.py
 ├── images/
 │   ├── star-background.jpg
-│   └── exoplanet-etl-pipeline-architecture(dark).png
+│   └── exoplanet-etl-pipeline-architecture(dark).drawio.png
 ├── app.py
 ├── requirements.txt
 └── README.md
@@ -70,7 +72,7 @@ No API key required — the NASA Exoplanet Archive is fully public.
  
 ## Features
 - Live data pulled from the NASA Exoplanet Archive Planetary Systems table
-- Total confirmed exoplanets, confirmed host stars, and most recent discovery as KPI metrics
+- Total confirmed exoplanets, confirmed host stars, and recent discovery as KPI metrics
 - Line chart showing planetary discovery trends over time (including the Kepler mission spike)
 - Bar chart showing the frequency of use for all exoplanet discovery methods
 - Bar chart showing confirmed exoplanet discovery counts by top 10 discovery facility
@@ -89,4 +91,4 @@ No API key required — the NASA Exoplanet Archive is fully public.
 
 ## Data Source
 NASA Exoplanet Archive TAP API — Planetary Systems table (ps), maintained by Caltech/IPAC on behalf of NASA.
-Fields extracted: pl_name, hostname, disc_year, releasedate, discoverymethod, disc_facility
+Fields extracted: pl_name, hostname, disc_year, disc_pubdate, discoverymethod, disc_facility

@@ -57,23 +57,23 @@ def count_confirmed_hosts():
         logger.error(f"count_confirmed_hosts failed: {e}")
         raise
 
-def newest_exoplanet_discovered():
+def recent_exoplanet_discovered():
     """
-    Queries the database for the most recently discovered unique exoplanet
-    based on the latest discovery year and discovery date in the dataset.
+    Queries the database for a recently discovered unique exoplanet,
+    ranked by discovery year then by the publication date of the discovery paper (YYYY-MM).
+    Many planets share a publication month; ties are broken alphabetically,
+    so this returns one recent discovery.
     -
     Returns:
-        DataFrame: Single row with columns exoplanet_name, discovery_date, and discovery_method.
+        DataFrame: Single row with columns exoplanet_name, discovery_pubdate, and discovery_method.
     """
     try:
         conn = sqlite3.connect(DB_PATH)
 
         query = """
-        SELECT name AS exoplanet_name, discovery_date, discovery_method
+        SELECT name AS exoplanet_name, discovery_pubdate, discovery_method
         FROM exoplanets
-        WHERE discovery_year = (SELECT MAX(discovery_year) FROM exoplanets)
-        GROUP BY name
-        ORDER BY discovery_date DESC, name ASC
+        ORDER BY discovery_year DESC, discovery_pubdate DESC, name ASC
         LIMIT 1;
         """
 
@@ -83,7 +83,7 @@ def newest_exoplanet_discovered():
 
         return result
     except Exception as e:
-        logger.error(f"newest_exoplanet_discovered failed: {e}")
+        logger.error(f"recent_exoplanet_discovered failed: {e}")
         raise
 
 def count_exoplanets_discovered_by_year():
