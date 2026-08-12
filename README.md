@@ -24,18 +24,23 @@ Built to develop real data engineering skills using a real-world NASA data sourc
  
 ## Project Structure
 ```
-exoplanet-analytics/
+nasa-exoplanet-etl-dashboard/
 ├── .streamlit/
 │   └── config.toml
+├── assets/
+│   └── styles.css
 ├── src/
 │   ├── etl.py
 │   ├── analytics.py
 │   └── pipeline.py
+├── tests/
+│   └── test_etl.py
 ├── images/
 │   ├── star-background.jpg
 │   └── exoplanet-etl-pipeline-architecture(dark).drawio.png
 ├── app.py
 ├── requirements.txt
+├── requirements-dev.txt
 └── README.md
 ```
 
@@ -59,7 +64,7 @@ pip install -r requirements.txt
  
 Run the ETL pipeline to populate the database:
 ```
-python src/pipeline.py
+python -m src.pipeline
 ```
 > The dashboard will also run the pipeline automatically on first launch if this step is skipped.
  
@@ -67,8 +72,28 @@ Launch the dashboard:
 ```
 streamlit run app.py
 ```
- 
+
 No API key required — the NASA Exoplanet Archive is fully public.
+
+## Testing
+
+Install development dependencies:
+```
+pip install -r requirements-dev.txt
+```
+
+Run the test suite from the project root:
+```
+python -m pytest
+```
+
+Use `python -m pytest` rather than bare `pytest` — the `-m` form puts the project
+root on the import path so `src` resolves.
+
+9 unit tests cover the transform and validate stages: field mapping, whitespace
+and blank handling, numeric coercion, null-name removal, implausible-year
+clearing, and duplicate collapsing.
+
  
 ## Features
 - Live data pulled from the NASA Exoplanet Archive Planetary Systems table

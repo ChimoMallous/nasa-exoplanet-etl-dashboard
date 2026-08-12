@@ -2,15 +2,18 @@ import pandas as pd
 import sqlite3
 import requests
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 BASE_URL = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
 QUERY = (
         "SELECT pl_name,hostname,disc_year,disc_pubdate,discoverymethod,disc_facility "
         "FROM ps WHERE default_flag = 1"
 )
-DB_PATH = "exoplanet_db"
+DB_PATH = str(PROJECT_ROOT / "exoplanet_db")
 
 def extract():
     """
@@ -67,9 +70,12 @@ def transform(r_data):
 
 def validate(df):
     """
-    Drops records missing a planet name and filters out unrealistic discovery
-    years. Uniqueness is enforced upstream by the `default_flag = 1` filter in
-    QUERY; the duplicate check here is a regression guard.
+    Cleans and validates exoplanet records. Records missing a planet name are dropped
+    because a nameless record cannot be counted, deduplicated, or displayed. 
+    Implausible discovery years are cleared to null rather than dropped, since a 
+    bad year is a bad field, not a bad planet - the record still represents a
+    confirmed discovery. Uniqueness is enforced upstream by the `default_flag = 1`
+    filter in QUERY; the duplicate check here is a regression guard.
     -
     Args:
         df (DataFrame): Transformed exoplanet records from transform().
@@ -82,12 +88,20 @@ def validate(df):
         return None
     df = df.copy()
     initial_count = len(df)
+
     df = df.dropna(subset=["name"])
-    df = df[(df["discovery_year"].isna()) | ((df["discovery_year"] >= 1900) & (df["discovery_year"] <= 2100))]
+
+    implausible = df["discovery_year"].notna() & ((df["discovery_year"] < 1900) | (df["discovery_year"] > 2100))
+
+    if implausible.any():
+        logger.warning(f"{int(implausible.sum())} records had an implausible discovery year - year cleared, records kept.")
+        df.loc[implausible, "discovery_year"] = pd.NA
+
     dupes = int(df["name"].duplicated().sum())
     if dupes:
         logger.warning(f"{dupes} duplicate planet names found after extraction - check default_flag in QUERY")
         df = df.drop_duplicates(subset=["name"], keep="first")
+
     final_count = len(df)
     if final_count < initial_count:
         logger.info(f"Validation successful. Removed {initial_count - final_count} records.")
@@ -95,7 +109,7 @@ def validate(df):
         logger.info("Validation successful. No records removed.")
     return df
 
-def load_to_db(df):
+def load_to_db(df): 
     """
     Loads a transformed and validated DataFrame into a SQLite database.
     Replaces the existing table on each run to keep data current with API.

@@ -1,4 +1,6 @@
-requests
-pandas
-streamlit
-plotly
+# styles.css targets Streamlit's internal data-testid attributes, which are not
+# a stable API - pin exactly so an upgrade cannot silently break the layout.
+streamlit==1.61.1
+pandas~=2.3
+plotly~=6.5
+requests~=2.32

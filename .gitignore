@@ -1,3 +1,5 @@
 exoplanet_db
 pipeline.log
 __pycache__/
+.pytest_cache/
+.claude/

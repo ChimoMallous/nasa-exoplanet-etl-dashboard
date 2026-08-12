@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+from pathlib import Path
 import base64
 import os
 
@@ -11,87 +12,30 @@ from src.pipeline import run
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
 
-with open("images/star-background.jpg", "rb") as f:
-    encoded = base64.b64encode(f.read()).decode()
-st.markdown(f"""
-<style>
-/* ── Background image ── */
-[data-testid="stAppViewContainer"] {{
-    background-image: url("data:image/jpeg;base64,{encoded}");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}}
-/* ── Dark overlay ── */
-[data-testid="stAppViewContainer"]::before {{
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    pointer-events: none;
-    z-index: 0;
-}}
-[data-testid="stAppViewContainer"] > * {{
-    position: relative;
-    z-index: 1;
-}}
-/* ── Strip default Streamlit backgrounds ── */
-.stApp, section.main, div.block-container,
-header, footer {{
-    background: transparent !important;
-    box-shadow: none !important;
-}}
-/* ── Glass cards on metrics only ── */
-[data-testid="stMetric"] {{
-    background: rgba(255, 255, 255, 0.07) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 14px;
-    padding: 16px !important;
-}}
-/* ── Glass bubble on captions ── */
-[data-testid="stCaptionContainer"] {{
-    background: rgba(255, 255, 255, 0.07) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    padding: 10px 14px !important;
-    margin-bottom: 7px !important;
-}}
-/* ── Sidebar glass ── */
-[data-testid="stSidebar"] {{
-    background: rgba(0, 0, 0, 0.40) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-}}
-/* ── Transparent charts so nebula shows through ── */
-.js-plotly-plot .plotly,
-.js-plotly-plot .plotly .bg,
-.stPlotlyChart,
-.stPlotlyChart > div,
-iframe {{
-    background: transparent !important;
-    background-color: transparent !important;
-}}
-/* ── Text readable on dark bg ── */
-[data-testid="stMetricLabel"],
-[data-testid="stMetricValue"],
-[data-testid="stMetricDelta"],
-p, h1, h2, h3, label {{
-    color: rgba(255, 255, 255, 0.90) !important;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
-}}
-</style>
-""", unsafe_allow_html=True)
+ROOT = Path(__file__).parent
+
+def load_css(css_file: str, bg_file: str) -> str:
+    encoded = base64.b64encode((ROOT / bg_file).read_bytes()).decode()
+    css = (ROOT / css_file).read_text()
+    return f"<style>{css.replace('__BG__', encoded)}</style>"
+
+st.markdown(
+    load_css("assets/styles.css", "images/star-background.jpg"),
+    unsafe_allow_html=True,
+)
 
 def db_date():
     return datetime.date.fromtimestamp(os.path.getmtime(DB_PATH))
+
 if not os.path.exists(DB_PATH) or db_date() < datetime.date.today():
     with st.spinner("Retrieving latest data from today's NASA Exoplanet Archive"):
-        run()
+        pipeline_succeeded = run()
+    if not pipeline_succeeded and not os.path.exists(DB_PATH):
+        st.error(
+            "Could not retrieve data from the NASA Exoplanet Archive and no local data is available. Please try again later."
+        )
+        st.stop()
+
 last_retrieved = db_date()
 
 st.title("Exoplanet Analytics Dashboard")
@@ -109,7 +53,7 @@ with c2:
 
 with c3:
     recent_planet = recent_exoplanet_discovered()
-    st.metric(label=f"Recently Discovered Exoplanet ({recent_planet.iloc[0, 1]})", value=recent_planet.iloc[0, 0])
+    st.metric(label=f"Recent Discovery ({recent_planet.iloc[0, 1]})", value=recent_planet.iloc[0, 0])
 
 g1, g2 = st.columns(2)
 
@@ -180,7 +124,7 @@ with st.container(border=True):
     st.plotly_chart(fig)
 st.caption("The dramatic increases in exoplanet discoveries in 2014 and 2016 were driven by two massive data releases from NASA’s Kepler Space Telescope, which used the transit method to spot exoplanets. In 2014, scientists verified over 700 new exoplanets simultaneously by focusing on systems with multiple candidates. In 2016, an even larger spike occurred when NASA announced more than 1,200 new planets at once, a breakthrough made possible by an automated data-vetting software called Robovetter.")
 
-with st.container(border=True):
+with st.container(border=False):
     st.markdown(
         """
         <div style="text-align: center; font-size: 14px; color: rgba(128,128,128,0.9);">

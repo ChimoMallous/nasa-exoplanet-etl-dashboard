@@ -1,37 +1,48 @@
 import sqlite3
 import pandas as pd
 import logging
+from contextlib import closing
 
-try:
-    from src.etl import DB_PATH
-except ImportError:
-    from etl import DB_PATH
+from src.etl import DB_PATH
 
 logger = logging.getLogger(__name__)
 
-def count_exoplanets_discovered(): 
+
+def _query(sql, description):
+    """
+    Runs a read-only query against the exoplanet database and returns the result.
+    The connection is closed even if the query raises.
+    -
+    Args:
+        sql (str): SQL statement to execute.
+        description (str): Caller name, used to identify failures in the log.
+    -
+    Returns:
+        DataFrame: The query result.
+    """
+    try:
+        with closing(sqlite3.connect(DB_PATH)) as conn:
+            return pd.read_sql(sql, conn)
+    except Exception as e:
+        logger.error(f"{description} failed: {e}")
+        raise
+
+
+def count_exoplanets_discovered():
     """
     Queries the database for the total number of unique confirmed exoplanets.
     -
     Returns:
         DataFrame: Single row with column total_exoplanets_discovered.
     """
-    try:
-        conn = sqlite3.connect(DB_PATH)
-
-        query = """
+    return _query(
+        """
         SELECT COUNT(DISTINCT name) AS total_exoplanets_discovered
         FROM exoplanets;
-        """ 
+        """,
+        "count_exoplanets_discovered",
+    )
 
-        result = pd.read_sql(query, conn)
-
-        conn.close() 
-        
-        return result
-    except Exception as e:
-        logger.error(f"count_exoplanets_discovered failed: {e}")
-        raise
 
 def count_confirmed_hosts():
     """
@@ -40,22 +51,14 @@ def count_confirmed_hosts():
     Returns:
         DataFrame: Single row with column total_confirmed_hosts.
     """
-    try:
-        conn = sqlite3.connect(DB_PATH)
-
-        query = """
+    return _query(
+        """
         SELECT COUNT(DISTINCT host_name) AS total_confirmed_hosts
         FROM exoplanets;
-        """
+        """,
+        "count_confirmed_hosts",
+    )
 
-        result = pd.read_sql(query, conn)
-
-        conn.close()
-
-        return result
-    except Exception as e:
-        logger.error(f"count_confirmed_hosts failed: {e}")
-        raise
 
 def recent_exoplanet_discovered():
     """
@@ -67,78 +70,56 @@ def recent_exoplanet_discovered():
     Returns:
         DataFrame: Single row with columns exoplanet_name, discovery_pubdate, and discovery_method.
     """
-    try:
-        conn = sqlite3.connect(DB_PATH)
-
-        query = """
+    return _query(
+        """
         SELECT name AS exoplanet_name, discovery_pubdate, discovery_method
         FROM exoplanets
         ORDER BY discovery_year DESC, discovery_pubdate DESC, name ASC
         LIMIT 1;
-        """
+        """,
+        "recent_exoplanet_discovered",
+    )
 
-        result = pd.read_sql(query, conn)
-
-        conn.close()
-
-        return result
-    except Exception as e:
-        logger.error(f"recent_exoplanet_discovered failed: {e}")
-        raise
 
 def count_exoplanets_discovered_by_year():
     """
     Queries the database for the number of unique exoplanets discovered per year,
-    ordered chronologically.
+    ordered chronologically. Records with an unknown discovery year are excluded
+    here rather than dropped during validation, so they still count toward totals.
     -
     Returns:
         DataFrame: Rows with columns year and total_exoplanets_discovered, ordered by year ascending.
     """
-    try:
-        conn = sqlite3.connect(DB_PATH)
-
-        query = """
+    return _query(
+        """
         SELECT discovery_year AS year, COUNT(DISTINCT name) AS total_exoplanets_discovered
         FROM exoplanets
+        WHERE discovery_year IS NOT NULL
         GROUP BY discovery_year
         ORDER BY year ASC;
-        """
+        """,
+        "count_exoplanets_discovered_by_year",
+    )
 
-        result = pd.read_sql(query, conn)
-
-        conn.close()
-
-        return result
-    except Exception as e:
-        logger.error(f"count_exoplanets_discovered_by_year failed: {e}")
-        raise
 
 def count_exoplanets_discovered_by_method():
     """
-    Queries the database for the number of unique exoplanet discovered per detection method,
+    Queries the database for the number of unique exoplanets discovered per detection method,
     ordered by frequency descending.
     -
     Returns:
         DataFrame: Rows with columns discovery_method and method_frequency, ordered by method_frequency descending.
     """
-    try:
-        conn = sqlite3.connect(DB_PATH)
-
-        query = """
+    return _query(
+        """
         SELECT discovery_method, COUNT(DISTINCT name) AS method_frequency
         FROM exoplanets
         GROUP BY discovery_method
         ORDER BY method_frequency DESC;
-        """
+        """,
+        "count_exoplanets_discovered_by_method",
+    )
 
-        result = pd.read_sql(query, conn)
-
-        conn.close()
-
-        return result
-    except Exception as e:
-        logger.error(f"count_exoplanets_discovered_by_method failed: {e}")
-        raise
 
 def count_exoplanets_discovered_by_facility():
     """
@@ -147,22 +128,13 @@ def count_exoplanets_discovered_by_facility():
     Returns:
         DataFrame: Rows with columns discovery_facility and exoplanets_discovered, ordered by exoplanets_discovered descending.
     """
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        
-        query = """
+    return _query(
+        """
         SELECT discovery_facility, COUNT(DISTINCT name) AS exoplanets_discovered
         FROM exoplanets
         GROUP BY discovery_facility
         ORDER BY exoplanets_discovered DESC
         LIMIT 10;
-        """
-
-        result = pd.read_sql(query, conn)
-
-        conn.close()
-
-        return result
-    except Exception as e:
-        logger.error(f"count_exoplanets_discovered_by_facility failed: {e}")
-        raise
+        """,
+        "count_exoplanets_discovered_by_facility",
+    )
