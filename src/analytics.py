@@ -112,7 +112,10 @@ def count_exoplanets_discovered_by_method():
     """
     return _query(
         """
-        SELECT discovery_method, COUNT(DISTINCT name) AS method_frequency
+        SELECT discovery_method,
+            COUNT(DISTINCT name) AS method_frequency,
+            ROUND(COUNT(DISTINCT name) * 100.0 /
+                    (SELECT COUNT(DISTINCT name) FROM exoplanets), 1) AS share_of_total
         FROM exoplanets
         GROUP BY discovery_method
         ORDER BY method_frequency DESC;
@@ -138,3 +141,4 @@ def count_exoplanets_discovered_by_facility():
         """,
         "count_exoplanets_discovered_by_facility",
     )
+

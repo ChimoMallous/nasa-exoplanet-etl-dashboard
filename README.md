@@ -10,12 +10,12 @@ Built to develop real data engineering skills using a real-world NASA data sourc
  
 ## What It Does
 - Extracts confirmed exoplanet records from the NASA Exoplanet Archive TAP API
-- Filters 39,000+ parameter-set rows to one default record per planet via default_flag = 1
+- Filters 40,000+ parameter-set rows to one default record per planet via default_flag = 1
 - Transforms raw JSON responses into structured, typed records
-- Validates records by dropping nulls, filtering invalid years, and deduplicating by planet name
+- Validates records by dropping nameless entries, clearing implausible discovery years while keeping the record, and deduplicating by planet name
 - Loads 6,300+ unique exoplanet records into a SQLite database
 - Displays total confirmed exoplanets, total confirmed host stars, and recently discovered exoplanet as KPI metrics
-- Visualizes exoplanets discovered by method, facility, and year
+- Visualizes exoplanets discovered by facility and year, with discovery method shares as KPI tiles
 - Implements structured error handling and logging across the ETL pipeline and analytics layer
 - Automatically re-runs the pipeline on page load when the local database is more than a day old
 
@@ -99,9 +99,10 @@ clearing, and duplicate collapsing.
 - Live data pulled from the NASA Exoplanet Archive Planetary Systems table
 - Total confirmed exoplanets, confirmed host stars, and recent discovery as KPI metrics
 - Line chart showing planetary discovery trends over time (including the Kepler mission spike)
-- Bar chart showing the frequency of use for all exoplanet discovery methods
 - Bar chart showing confirmed exoplanet discovery counts by top 10 discovery facility
-- Analytical insights written beneath each chart interpreting the data in domain context
+- Top four discovery methods shown as KPI tiles with each method's share of all confirmed exoplanets, computed live in SQL
+- Hover definitions explaining how each detection method works
+- Analytical insight beneath the discovery timeline interpreting the 2014 and 2016 Kepler data releases
 - Fully transparent charts over a space-themed background
 - Data last retrieved timestamp displayed on dashboard
 

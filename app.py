@@ -19,10 +19,70 @@ def load_css(css_file: str, bg_file: str) -> str:
     css = (ROOT / css_file).read_text()
     return f"<style>{css.replace('__BG__', encoded)}</style>"
 
+CHART_AXIS_TITLE = dict(family="IBM Plex Mono, monospace", size=11, color="#FFFFFF")
+CHART_TICK = dict(family="IBM Plex Mono, monospace", size=11, color="#FFFFFF")
+
+def style_chart(fig, x_title="", y_title=""):
+    """
+    Applies the dashboard's shared chart theme so every figure matches the metric
+    tiles: mono uppercase axis titles, muted gridlines, and glass tooltips.
+    -
+    Args:
+        fig (Figure): Plotly figure to restyle in place.
+        x_title (str): X axis label, rendered uppercase.
+        y_title (str): Y axis label, rendered uppercase.
+    -
+    Returns:
+        Figure: The same figure, restyled.
+    """
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="IBM Plex Sans, sans-serif", color="#FFFFFF", size=12),
+        hoverlabel=dict(
+            bgcolor="rgba(12,18,32,0.96)",
+            bordercolor="rgba(143,208,255,0.35)",
+            font=dict(family="IBM Plex Mono, monospace", color="#FFFFFF", size=12),
+        ),
+        xaxis=dict(
+            title=dict(text=x_title.upper(), font=CHART_AXIS_TITLE, standoff=16),
+            tickfont=CHART_TICK,
+            showgrid=False,
+            showline=True,
+            linecolor="rgba(255,255,255,0.12)",
+            ticks="outside",
+            tickcolor="rgba(255,255,255,0.12)",
+            ticklen=4,
+        ),
+        yaxis=dict(
+            title=dict(text=y_title.upper(), font=CHART_AXIS_TITLE, standoff=16),
+            tickfont=CHART_TICK,
+            showgrid=True,
+            gridcolor="rgba(255,255,255,0.055)",
+            zeroline=False,
+        ),
+        margin=dict(l=10, r=18, t=18, b=10),
+    )
+    return fig
+
 st.markdown(
     load_css("assets/styles.css", "images/star-background.jpg"),
     unsafe_allow_html=True,
 )
+
+METHOD_DESCRIPTIONS = {
+    "Transit": "The planet crosses in front of its star, dimming the starlight by a measurable fraction.",
+    "Radial Velocity": "The planet's gravity tugs its star into a small orbit, shifting the star's light red and blue.",
+    "Microlensing": "A foreground star's gravity magnifies a distant star, and an orbiting planet adds a brief extra spike.",
+    "Imaging": "The planet is photographed directly once the star's overwhelming glare is blocked out.",
+    "Transit Timing Variations": "An unseen planet's gravity makes a known transiting planet arrive early or late.",
+    "Eclipse Timing Variations": "A planet orbiting a binary pair shifts the timing of the two stars' mutual eclipses.",
+    "Orbital Brightness Modulation": "The planet's changing phases and reflected light vary the system's total brightness.",
+    "Pulsar Timing": "A planet shifts the arrival time of a pulsar's otherwise metronomic radio pulses.",
+    "Astrometry": "The star's position on the sky traces a tiny orbit around the system's center of mass.",
+    "Pulsation Timing Variations": "A planet shifts the timing of a pulsating star's regular brightness cycles.",
+    "Disk Kinematics": "A forming planet disturbs the gas motion in a young star's disk, leaving a detectable kink.",
+}
 
 def db_date():
     return datetime.date.fromtimestamp(os.path.getmtime(DB_PATH))
@@ -41,6 +101,8 @@ last_retrieved = db_date()
 st.title("Exoplanet Analytics Dashboard")
 st.markdown(f":shimmer[Data last retrieved {last_retrieved} via the NASA Exoplanet Archive (TAP/ADQL) API]")
 
+st.subheader("Overview")
+
 c1, c2, c3 = st.columns(3)
 
 with c1:
@@ -55,74 +117,63 @@ with c3:
     recent_planet = recent_exoplanet_discovered()
     st.metric(label=f"Recent Discovery ({recent_planet.iloc[0, 1]})", value=recent_planet.iloc[0, 0])
 
-g1, g2 = st.columns(2)
+top_methods = count_exoplanets_discovered_by_method()
+top_facilities = count_exoplanets_discovered_by_facility()
+
+g1, g2 = st.columns(2, vertical_alignment="top", gap="medium")
 
 with g1:
-    top_methods = count_exoplanets_discovered_by_method()
-    fig = px.bar(
-        top_methods,
-        x='discovery_method',
-        y='method_frequency',
-        title="Exoplanets Discovered by Method",
-        labels={'discovery_method': 'Discovery Method', 'method_frequency': 'Number of Exoplanets Discovered'},
-        color_discrete_sequence=["#0122DB"]
-        )
-    fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font_color="white",
-        yaxis=dict(showgrid=False)
-    )
-    with st.container(border=True):
-        st.plotly_chart(fig)
-    st.caption("Transit photometry dominates exoplanet detection, accounting for over 70% of all confirmed discoveries driven by the Kepler and TESS space telescopes.")
-
-with g2:
-    top_facilities = count_exoplanets_discovered_by_facility()
+    st.subheader("Top Discovery Facilities")
     fig = px.bar(
         top_facilities,
         x='discovery_facility',
         y='exoplanets_discovered',
-        title="Exoplanets Discovered by Facility (Top 10)",
-        labels={
-            "exoplanets_discovered": "Number of Exoplanets Discovered",
-            "discovery_facility": "Discovery Facility"
-        },
-        color_discrete_sequence=["#0122DB"]
+        color_discrete_sequence=["#0122DB"],
     )
-    fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font_color="white",
-        yaxis=dict(showgrid=False)
-    )
-    with st.container(border=True):
-        st.plotly_chart(fig)
-    st.caption("The Kepler Mission leads discoveries, accounting for roughly 44% of confirmed worlds. TESS has also contributed significantly, confirming around 14% of exoplanets.")
+    fig.update_traces(marker_cornerradius=3, marker_line_width=0)
+    style_chart(fig, x_title="Discovery Facility", y_title="Exoplanets Discovered")
+    fig.update_layout(height=400, bargap=0.35)
+    with st.container(key="chart_facilities"):
+        st.plotly_chart(fig, config={"displayModeBar": False})
+
+with g2:
+    st.subheader("Top Discovery Methods")
+    with st.container(key="method_shares"):
+        top_row = st.columns(2)
+        bottom_row = st.columns(2)
+        for cell, row in zip(top_row + bottom_row, top_methods.head(4).itertuples()):
+            with cell:
+                st.metric(
+                    label=f"{row.discovery_method} ({row.method_frequency})",
+                    value=f"{row.share_of_total}%",
+                    help=METHOD_DESCRIPTIONS.get(
+                        row.discovery_method,
+                        "Detection method recorded by the NASA Exoplanet Archive.",
+                    ),
+                    height=215,
+                )
+
+st.subheader("Discovery Over Time")
 
 planets_by_year = count_exoplanets_discovered_by_year()
 fig = px.line(
     planets_by_year,
     x='year',
     y='total_exoplanets_discovered',
-    title='Exoplanets Discovered by Year',
-    labels={'year': 'Year', 'total_exoplanets_discovered': 'Number of Exoplanets Discovered'},
-    color_discrete_sequence=["#0122DB"]
-)
-fig.update_layout(
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font_color="white",
-    yaxis=dict(showgrid=False)
+    color_discrete_sequence=["#0122DB"],
 )
 fig.update_traces(
-    line=dict(width=5, shape='spline'),
+    line=dict(width=3.5, shape='spline'),
     mode='lines+markers',
-    marker=dict(size=5)
+    marker=dict(size=4, line=dict(width=0)),
+    fill='tozeroy',
+    fillcolor='rgba(1,34,219,0.20)',
 )
-with st.container(border=True):
-    st.plotly_chart(fig)
-st.caption("The dramatic increases in exoplanet discoveries in 2014 and 2016 were driven by two massive data releases from NASA’s Kepler Space Telescope, which used the transit method to spot exoplanets. In 2014, scientists verified over 700 new exoplanets simultaneously by focusing on systems with multiple candidates. In 2016, an even larger spike occurred when NASA announced more than 1,200 new planets at once, a breakthrough made possible by an automated data-vetting software called Robovetter.")
+style_chart(fig, x_title="Year", y_title="Exoplanets Discovered")
+fig.update_layout(height=380)
+with st.container(key="chart_year"):
+    st.plotly_chart(fig, config={"displayModeBar": False})
+st.caption("The dramatic increases in exoplanet discoveries in 2014 and 2016 were driven by two massive data releases from NASA's Kepler Space Telescope, which used the transit method to spot exoplanets. In 2014, scientists verified over 700 new exoplanets simultaneously by focusing on systems with multiple candidates. In 2016, an even larger spike occurred when NASA announced more than 1,200 new planets at once, a breakthrough made possible by an automated data-vetting software called Robovetter.")
 
 with st.container(border=False):
     st.markdown(
