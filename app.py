@@ -7,7 +7,7 @@ import os
 import datetime
 
 from src.etl import DB_PATH
-from src.analytics import count_exoplanets_discovered, count_confirmed_hosts, recent_exoplanet_discovered, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, count_exoplanets_discovered_by_facility
+from src.analytics import count_exoplanets_discovered, count_confirmed_hosts, recent_exoplanet_discovered, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, count_exoplanets_discovered_by_facility, sky_positions
 from src.pipeline import run
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
@@ -133,6 +133,8 @@ with g1:
     fig.update_traces(marker_cornerradius=3, marker_line_width=0)
     style_chart(fig, x_title="Discovery Facility", y_title="Exoplanets Discovered")
     fig.update_layout(height=400, bargap=0.35)
+    # update axes to 500 tick
+    fig.update_yaxes(dtick=500)
     with st.container(key="chart_facilities"):
         st.plotly_chart(fig, config={"displayModeBar": False})
 
@@ -152,6 +154,72 @@ with g2:
                     ),
                     height=215,
                 )
+
+@st.cache_data
+def load_sky():
+    return sky_positions()
+
+st.subheader("Where We Have Actually Looked")
+
+sky = load_sky()
+year = st.slider("Discovered up to", 1992, int(sky["discovery_year"].max()),
+                 value=int(sky["discovery_year"].max()), key="sky_year")
+shown = sky[sky["discovery_year"] <= year]
+
+SURVEY_ORDER = ["Kepler", "TESS", "K2", "All other facilities"]
+SURVEY_COLORS = {
+    "Kepler": "#FFA53C",              
+    "TESS": "#22D3EE",                
+    "K2": "#F472B6",                    
+    "All other facilities": "#0122DB",  
+}
+
+counts = shown["survey"].value_counts()
+labels = {s: f"{s} ({counts.get(s, 0)})" for s in SURVEY_ORDER}
+shown = shown.assign(survey_label=shown["survey"].map(labels))
+
+fig = px.scatter(
+    shown,
+    x="right_ascension", y="declination", color="survey_label",
+    category_orders={"survey_label": [labels[s] for s in SURVEY_ORDER]},
+    color_discrete_map={labels[s]: SURVEY_COLORS[s] for s in SURVEY_ORDER},
+    hover_name="name",
+    custom_data=["discovery_facility", "discovery_method", "discovery_year"],
+    labels={"right_ascension": "", "declination": "", "survey_label": ""},
+)
+fig.update_traces(
+    marker=dict(line=dict(width=0)),
+    hovertemplate=(
+        "<b>%{hovertext}</b><br>"
+        "%{customdata[0]}<br>"
+        "%{customdata[1]} Method<br>"
+        "Discovered %{customdata[2]}<br>"
+        "RA %{x:.1f}°   Dec %{y:.1f}°"
+        "<extra></extra>"
+    ),
+)
+fig.for_each_trace(
+    lambda t: t.update(marker_opacity=.5, marker_size=3)
+    if t.name.startswith("All other")
+    else t.update(marker_opacity=0.95, marker_size=5)
+)
+style_chart(fig, x_title="Right ascension (deg)", y_title="Declination (deg)")
+fig.update_layout(
+    height=520,
+    xaxis=dict(range=[0, 360], dtick=60),
+    yaxis=dict(range=[-90, 90], dtick=30),
+    legend=dict(orientation="h", y=-0.18, x=0, title=""),
+)
+
+with st.container(key="chart_sky"):
+    st.plotly_chart(fig, config={"displayModeBar": False})
+
+st.caption(
+    "As of 2026, The Kepler cluster covers 0.58% of the sky and holds 44% of all confirmed planets. K2's arc "
+    "traces the ecliptic, the only plane the spacecraft could hold steady on after a 2013 reaction "
+    "wheel failure; TESS scatters across the whole sky by design; and the group near RA 268°, "
+    "Dec −29° is the galactic center, where microlensing surveys point for dense background stars."
+)
 
 st.subheader("Discovery Over Time")
 

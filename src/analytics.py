@@ -142,3 +142,26 @@ def count_exoplanets_discovered_by_facility():
         "count_exoplanets_discovered_by_facility",
     )
 
+def sky_positions():
+    """
+    Queries the sky coordinates of every planet, grouped by the survey that found it.
+    Right ascension and declination are populated for the entire catalog.
+    -
+    Returns:
+        DataFrame: Rows with columns name, right_ascension, declination, discovery_year,
+        discovery_facility, discovery_method, and survey.
+    """
+    return _query(
+        """
+        SELECT name, right_ascension, declination, discovery_year, discovery_facility, discovery_method,
+               CASE
+                   WHEN discovery_facility = 'Kepler' THEN 'Kepler'
+                   WHEN discovery_facility LIKE '%TESS%' THEN 'TESS'
+                   WHEN discovery_facility = 'K2' THEN 'K2'
+                   ELSE 'All other facilities'
+               END AS survey
+        FROM exoplanets
+        WHERE right_ascension IS NOT NULL AND declination IS NOT NULL;
+        """,
+        "sky_positions",
+    )

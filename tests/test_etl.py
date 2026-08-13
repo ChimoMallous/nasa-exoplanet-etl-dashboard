@@ -13,6 +13,8 @@ def test_transform_maps_api_fields_to_database_columns():
         "disc_pubdate": "2011-12",
         "discoverymethod": "Transit",
         "disc_facility": "Kepler",
+        "ra": 285.679,
+        "dec": 47.968,
     }]
 
     result = transform(raw)
@@ -24,10 +26,14 @@ def test_transform_maps_api_fields_to_database_columns():
         "discovery_pubdate",
         "discovery_method",
         "discovery_facility",
+        "right_ascension",
+        "declination",
     ]
     assert result.loc[0, "name"] == "Kepler-22 b"
     assert result.loc[0, "host_name"] == "Kepler-22"
     assert result.loc[0, "discovery_year"] == 2011
+    assert result.loc[0, "right_ascension"] == 285.679
+    assert result.loc[0, "declination"] == 47.968
 
 
 def test_transform_strips_whitespace_and_converts_blanks_to_null():

@@ -10,7 +10,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 BASE_URL = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
 QUERY = (
-        "SELECT pl_name,hostname,disc_year,disc_pubdate,discoverymethod,disc_facility "
+        "SELECT pl_name,hostname,disc_year,disc_pubdate,discoverymethod,disc_facility, ra, dec "
         "FROM ps WHERE default_flag = 1"
 )
 DB_PATH = str(PROJECT_ROOT / "exoplanet_db")
@@ -59,12 +59,16 @@ def transform(r_data):
         "discovery_year": p.get("disc_year"),
         "discovery_pubdate": p.get("disc_pubdate"),
         "discovery_method": p.get("discoverymethod"),
-        "discovery_facility": p.get("disc_facility")
+        "discovery_facility": p.get("disc_facility"),
+        "right_ascension": p.get("ra"),
+        "declination": p.get("dec")
     } for p in r_data])
     for col in ["name", "host_name", "discovery_pubdate", "discovery_method", "discovery_facility"]:
         df[col] = df[col].astype("string").str.strip()
         df[col] = df[col].replace("", pd.NA)
     df["discovery_year"] = pd.to_numeric(df["discovery_year"], errors="coerce").astype("Int64")
+    for col in ["right_ascension", "declination"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
     logger.info(f"Transformation successful. {len(df)} records available")
     return df
 
