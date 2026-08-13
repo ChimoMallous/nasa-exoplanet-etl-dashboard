@@ -13,6 +13,8 @@ def test_transform_maps_api_fields_to_database_columns():
         "disc_pubdate": "2011-12",
         "discoverymethod": "Transit",
         "disc_facility": "Kepler",
+        "pl_rade": 2.38,
+        "pl_bmasse": 9.1,
         "ra": 285.679,
         "dec": 47.968,
     }]
@@ -26,12 +28,16 @@ def test_transform_maps_api_fields_to_database_columns():
         "discovery_pubdate",
         "discovery_method",
         "discovery_facility",
+        "planet_radius",
+        "planet_mass",
         "right_ascension",
         "declination",
     ]
     assert result.loc[0, "name"] == "Kepler-22 b"
     assert result.loc[0, "host_name"] == "Kepler-22"
     assert result.loc[0, "discovery_year"] == 2011
+    assert result.loc[0, "planet_radius"] == 2.38
+    assert result.loc[0, "planet_mass"] == 9.1
     assert result.loc[0, "right_ascension"] == 285.679
     assert result.loc[0, "declination"] == 47.968
 

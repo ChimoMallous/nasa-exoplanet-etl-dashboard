@@ -15,7 +15,7 @@ Built to develop real data engineering skills using a real-world NASA data sourc
 - Validates records by dropping nameless entries, clearing implausible discovery years while keeping the record, and deduplicating by planet name
 - Loads 6,300+ unique exoplanet records into a SQLite database
 - Displays total confirmed exoplanets, total confirmed host stars, and recently discovered exoplanet as KPI metrics
-- Visualizes exoplanets discovered by facility and year, with discovery method shares as KPI tiles
+- Classifies every planet as Terrestrial, Super Earth, Neptune-like, or Gas Giant using mass where measured and radius as a fallback
 - Maps every confirmed planet by its position on the sky, filterable by discovery year
 - Implements structured error handling and logging across the ETL pipeline and analytics layer
 - Automatically re-runs the pipeline on page load when the local database is more than a day old
@@ -103,7 +103,7 @@ implausible-year clearing, and duplicate collapsing.
 - Year slider on the sky map that filters discoveries in place, with per-survey counts updating live in the legend
 - Hover on any planet to see the discovering facility, detection method, discovery year, and sky coordinates
 - Line chart showing planetary discovery trends over time (including the Kepler mission spike)
-- Bar chart showing confirmed exoplanet discovery counts by top 10 discovery facility
+- Planet type breakdown as a donut chart, with mass-first classification and thresholds documented alongside it
 - Top four discovery methods shown as KPI tiles with each method's share of all confirmed exoplanets, computed live in SQL
 - Hover definitions explaining how each detection method works
 - Analytical insight beneath the discovery timeline interpreting the 2014 and 2016 Kepler data releases
@@ -123,4 +123,4 @@ implausible-year clearing, and duplicate collapsing.
 
 ## Data Source
 NASA Exoplanet Archive TAP API — Planetary Systems table (ps), maintained by Caltech/IPAC on behalf of NASA.
-Fields extracted: pl_name, hostname, disc_year, disc_pubdate, discoverymethod, disc_facility, ra, dec
+Fields extracted: pl_name, hostname, disc_year, disc_pubdate, discoverymethod, disc_facility, pl_rade, pl_bmasse, ra, dec

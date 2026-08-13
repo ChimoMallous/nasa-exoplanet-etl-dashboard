@@ -7,7 +7,7 @@ import os
 import datetime
 
 from src.etl import DB_PATH
-from src.analytics import count_exoplanets_discovered, count_confirmed_hosts, recent_exoplanet_discovered, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, count_exoplanets_discovered_by_facility, sky_positions
+from src.analytics import count_exoplanets_discovered, count_confirmed_hosts, recent_exoplanet_discovered, count_exoplanets_discovered_by_year, count_exoplanets_discovered_by_method, sky_positions, exoplanet_classifications
 from src.pipeline import run
 
 st.set_page_config(page_title="Exoplanet Analytics", layout="wide")
@@ -117,29 +117,57 @@ with c3:
     recent_planet = recent_exoplanet_discovered()
     st.metric(label=f"Recent Discovery ({recent_planet.iloc[0, 1]})", value=recent_planet.iloc[0, 0])
 
-top_methods = count_exoplanets_discovered_by_method()
-top_facilities = count_exoplanets_discovered_by_facility()
-
 g1, g2 = st.columns(2, vertical_alignment="top", gap="medium")
 
 with g1:
-    st.subheader("Top Discovery Facilities")
-    fig = px.bar(
-        top_facilities,
-        x='discovery_facility',
-        y='exoplanets_discovered',
-        color_discrete_sequence=["#0122DB"],
+    st.subheader("Exoplanet Types")
+    classes = exoplanet_classifications()
+    classes["exoplanet_bin"] = classes["exoplanet_bin"].str.upper()
+
+    CLASS_ORDER = ["TERRESTRIAL", "SUPER EARTH", "NEPTUNE-LIKE", "GAS GIANT"]
+    fig = px.pie(
+        classes,
+        names="exoplanet_bin",
+        values="planet_count",
+        hole=0.25,
+        color="exoplanet_bin",
+        category_orders={"exoplanet_bin": CLASS_ORDER},
+        color_discrete_map={
+            "TERRESTRIAL":  "#ABB7FA",
+            "SUPER EARTH":  "#8091ED",
+            "NEPTUNE-LIKE": "#4159E4",
+            "GAS GIANT":    "#0122DB",
+        },
     )
-    fig.update_traces(marker_cornerradius=3, marker_line_width=0)
-    style_chart(fig, x_title="Discovery Facility", y_title="Exoplanets Discovered")
-    fig.update_layout(height=400, bargap=0.35)
-    # update axes to 500 tick
-    fig.update_yaxes(dtick=500)
-    with st.container(key="chart_facilities"):
+    fig.update_traces(
+        sort=False,
+        direction="clockwise",
+        textposition="outside",
+        texttemplate="%{label} (%{value})<br>%{percent}",
+        textfont=dict(family="IBM Plex Mono, monospace", size=11, color="#FFFFFF"),
+        marker=dict(line=dict(color="rgba(10,14,24,0.9)", width=2)),
+        hovertemplate="<b>%{label}</b><br>%{value} planets<br>%{percent}<extra></extra>",
+    )
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="IBM Plex Sans, sans-serif", color="#FFFFFF", size=12),
+        hoverlabel=dict(
+            bgcolor="rgba(12,18,32,0.96)",
+            bordercolor="rgba(143,208,255,0.35)",
+            font=dict(family="IBM Plex Mono, monospace", color="#FFFFFF", size=12),
+        ),
+        showlegend=False,
+        height=400,
+        margin=dict(l=100, r=130, t=30, b=30),
+    )
+
+    with st.container(key="chart_classes"):
         st.plotly_chart(fig, config={"displayModeBar": False})
 
 with g2:
     st.subheader("Top Discovery Methods")
+    top_methods = count_exoplanets_discovered_by_method()
     with st.container(key="method_shares"):
         top_row = st.columns(2)
         bottom_row = st.columns(2)
@@ -155,6 +183,14 @@ with g2:
                     height=215,
                 )
 
+st.caption(
+    "Planets are classified by mass where measured and by radius otherwise: Terrestrial up to "
+    "2 Earth masses or 1.25 Earth radii, Super Earth up to 10 or 2, Neptune-like up to 50 or 6, "
+    "and Gas Giant above that. The 50 Earth-mass boundary sits between Neptune at 17 and Saturn "
+    "at 95. Masses use the archive's best available value, which for radial-velocity detections "
+    "is a lower bound rather than a true mass. 15 planets have neither measurement."
+)
+
 @st.cache_data
 def load_sky():
     return sky_positions()
@@ -162,7 +198,7 @@ def load_sky():
 st.subheader("Where We Have Actually Looked")
 
 sky = load_sky()
-year = st.slider("Discovered up to", 1992, int(sky["discovery_year"].max()),
+year = st.slider("Discoveries up to", 1992, int(sky["discovery_year"].max()),
                  value=int(sky["discovery_year"].max()), key="sky_year")
 shown = sky[sky["discovery_year"] <= year]
 
@@ -236,6 +272,7 @@ fig.update_traces(
     marker=dict(size=4, line=dict(width=0)),
     fill='tozeroy',
     fillcolor='rgba(1,34,219,0.20)',
+    hovertemplate="<b>%{x}</b><br>%{y} Exoplanets discovered<extra></extra>",
 )
 style_chart(fig, x_title="Year", y_title="Exoplanets Discovered")
 fig.update_layout(height=380)

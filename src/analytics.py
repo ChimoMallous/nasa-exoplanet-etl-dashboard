@@ -123,25 +123,6 @@ def count_exoplanets_discovered_by_method():
         "count_exoplanets_discovered_by_method",
     )
 
-
-def count_exoplanets_discovered_by_facility():
-    """
-    Queries the database for the top 10 discovery facilities by number of unique exoplanets confirmed.
-    -
-    Returns:
-        DataFrame: Rows with columns discovery_facility and exoplanets_discovered, ordered by exoplanets_discovered descending.
-    """
-    return _query(
-        """
-        SELECT discovery_facility, COUNT(DISTINCT name) AS exoplanets_discovered
-        FROM exoplanets
-        GROUP BY discovery_facility
-        ORDER BY exoplanets_discovered DESC
-        LIMIT 10;
-        """,
-        "count_exoplanets_discovered_by_facility",
-    )
-
 def sky_positions():
     """
     Queries the sky coordinates of every planet, grouped by the survey that found it.
@@ -164,4 +145,40 @@ def sky_positions():
         WHERE right_ascension IS NOT NULL AND declination IS NOT NULL;
         """,
         "sky_positions",
+    )
+
+def exoplanet_classifications():
+    """
+    Groups every planet into a size class, using mass where measured and falling back
+    to radius otherwise. Mass takes precedence because it indicates composition more
+    directly than radius, which cannot separate a dense super-Earth from an inflated
+    mini-Neptune. Planets with neither measurement are returned as Unknown.
+    -
+    Returns:
+        DataFrame: Rows with columns planet_count and exoplanet_bin.
+    """
+    return _query(
+        """
+        SELECT COUNT(DISTINCT name) AS planet_count,
+               CASE
+                   WHEN planet_mass IS NOT NULL THEN
+                       CASE
+                           WHEN planet_mass <= 2 THEN 'Terrestrial'
+                           WHEN planet_mass <= 10  THEN 'Super Earth'
+                           WHEN planet_mass <= 50  THEN 'Neptune-like'
+                           ELSE 'Gas Giant'
+                       END
+                   WHEN planet_radius IS NOT NULL THEN
+                       CASE
+                           WHEN planet_radius <= 1.25 THEN 'Terrestrial'
+                           WHEN planet_radius <= 2 THEN 'Super Earth'
+                           WHEN planet_radius <= 6 THEN 'Neptune-like'
+                           ELSE 'Gas Giant'
+                       END
+                   ELSE 'Unknown'
+               END AS exoplanet_bin
+        FROM exoplanets
+        GROUP BY exoplanet_bin
+        """,
+        "exoplanet_classifications"
     )
