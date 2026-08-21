@@ -1,7 +1,8 @@
 # Exoplanet Analytics Dashboard
  
-[Live Demo](https://nasa-exoplanet-etl-dashboard-0.streamlit.app/)
 ![Exoplanet Analytics Dashboard](images/exoplanet-dashboard-preview.png)
+
+[Live Demo](https://nasa-exoplanet-etl-dashboard-0.streamlit.app/)
 
 ## Overview
 An end-to-end ETL pipeline and interactive analytics dashboard built on real NASA exoplanet data.
