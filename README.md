@@ -1,7 +1,8 @@
 # Exoplanet Analytics Dashboard
  
 [Live Demo](https://nasa-exoplanet-etl-dashboard-0.streamlit.app/)
- 
+![Exoplanet Analytics Dashboard](images/exoplanet-dashboard-preview.png)
+
 ## Overview
 An end-to-end ETL pipeline and interactive analytics dashboard built on real NASA exoplanet data.
 Extracts live data from the NASA Exoplanet Archive API, stores it in a local SQLite database, and visualizes discovery trends and survey coverage through an interactive Streamlit dashboard.
@@ -37,6 +38,7 @@ nasa-exoplanet-etl-dashboard/
 ├── tests/
 │   └── test_etl.py
 ├── images/
+│   ├── exoplanet-dashboard-preview.png
 │   ├── star-background.jpg
 │   └── exoplanet-etl-pipeline-architecture(dark).drawio.png
 ├── app.py
